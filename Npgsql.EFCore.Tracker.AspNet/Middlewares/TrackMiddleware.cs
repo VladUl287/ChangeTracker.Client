@@ -16,9 +16,9 @@ public sealed class TrackMiddleware<TContext>(RequestDelegate next, IActionsRegi
     {
         var method = context.Request.Method;
 
-        if (method == "GET")
+        if (method == HttpMethod.Get.Method)
         {
-            var path = context.Request.GetEncodedPathAndQuery();
+            var path = context.Request.GetEncodedPath();
 
             var descriptor = registry.Get(path);
             if (descriptor is not null)
