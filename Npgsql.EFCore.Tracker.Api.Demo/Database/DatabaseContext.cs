@@ -4,7 +4,7 @@ using Npgsql.EFCore.Tracker.Core.Extensions;
 
 namespace Npgsql.EFCore.Tracker.Api.Demo.Database;
 
-public sealed class DatabaseContext : DbContext
+public sealed class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 {
     public DbSet<Role> Roles => Set<Role>();
 
