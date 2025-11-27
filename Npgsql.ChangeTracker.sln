@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Npgsql.EFCore.Tracker.Core"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Npgsql.EFCore.Tracker.Api.Demo", "Npgsql.EFCore.Tracker.Api.Demo\Npgsql.EFCore.Tracker.Api.Demo.csproj", "{B203766B-AB55-4DFF-B110-910BB8C08CBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Npgsql.EFCore.Tracker.AspNet", "Npgsql.EFCore.Tracker.AspNet\Npgsql.EFCore.Tracker.AspNet.csproj", "{3BE7D7C4-EC3E-4F8E-888F-D87DA684228D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B203766B-AB55-4DFF-B110-910BB8C08CBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B203766B-AB55-4DFF-B110-910BB8C08CBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B203766B-AB55-4DFF-B110-910BB8C08CBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BE7D7C4-EC3E-4F8E-888F-D87DA684228D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BE7D7C4-EC3E-4F8E-888F-D87DA684228D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BE7D7C4-EC3E-4F8E-888F-D87DA684228D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BE7D7C4-EC3E-4F8E-888F-D87DA684228D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
