@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql.EFCore.Tracker.AspNet.Services.Contracts;
@@ -9,8 +8,10 @@ using System.Net;
 
 namespace Npgsql.EFCore.Tracker.AspNet.Middlewares;
 
-public sealed class TrackMiddleware<TContext>(RequestDelegate next, IActionsRegistry registry)
-    where TContext : DbContext
+public sealed class TrackMiddleware<TContext>(
+    RequestDelegate next, 
+    IActionsRegistry registry,
+    IPathResolver pathResolver) where TContext : DbContext
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -18,7 +19,7 @@ public sealed class TrackMiddleware<TContext>(RequestDelegate next, IActionsRegi
 
         if (method == HttpMethod.Get.Method)
         {
-            var path = context.Request.GetEncodedPath();
+            var path = pathResolver.Resolve(context);
 
             var descriptor = registry.Get(path);
             if (descriptor is not null)

@@ -17,6 +17,8 @@ public static class SerivcesExtension
             return new DefaultActionsRegistry(descriptors);
         });
 
+        services.AddSingleton<IPathResolver, DefaultPathResolver>();
+
         return services;
     }
 

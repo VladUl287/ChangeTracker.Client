@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Npgsql.EFCore.Tracker.AspNet.Utils;
+using Npgsql.EFCore.Tracker.AspNet.Services;
+using Npgsql.EFCore.Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.Tests;
 
-public class HttpRequestExtensionsTests
+public class PathResolverTests
 {
+    private static readonly IPathResolver _defaultPathResolver = new DefaultPathResolver();
+
     [Fact]
     public void GetEncodedPath_WhenPathBaseAndPathHaveValues_ReturnsCombinedPath()
     {
@@ -15,7 +18,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/v1/users";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/api/v1/users", result);
@@ -31,7 +34,7 @@ public class HttpRequestExtensionsTests
         request.Path = PathString.Empty;
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/api", result);
@@ -47,7 +50,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/users";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/users", result);
@@ -63,7 +66,7 @@ public class HttpRequestExtensionsTests
         request.Path = PathString.Empty;
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/", result);
@@ -79,7 +82,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/api/", result);
@@ -95,7 +98,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/users";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/users", result);
@@ -111,7 +114,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/", result);
@@ -127,7 +130,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/products/123/details";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/api/v2/products/123/details", result);
@@ -143,7 +146,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/users";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/api/users", result);
@@ -159,7 +162,7 @@ public class HttpRequestExtensionsTests
         request.Path = "/";
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/", result);
@@ -175,7 +178,7 @@ public class HttpRequestExtensionsTests
         request.Path = PathString.Empty;
 
         // Act
-        var result = request.GetEncodedPath();
+        var result = _defaultPathResolver.Resolve(context);
 
         // Assert
         Assert.Equal("/", result);
