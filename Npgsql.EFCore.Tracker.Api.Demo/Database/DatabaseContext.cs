@@ -14,6 +14,7 @@ public sealed class DatabaseContext(DbContextOptions<DatabaseContext> options) :
         modelBuilder
             .Entity<Role>(builder =>
             {
+                builder.ToTable("roles");
                 builder.HasKey(c => c.Id);
             });
     }

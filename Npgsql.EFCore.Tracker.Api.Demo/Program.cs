@@ -27,8 +27,6 @@ var app = builder.Build();
         app.MapOpenApi();
     }
 
-    app.UseHttpsRedirection();
-
     app.UseAuthorization();
 
     app.UseTracker<DatabaseContext>();
