@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Tracker.Api.Demo.Database;
+using Tracker.Api.Demo.Extensions;
 using Tracker.AspNet.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +32,11 @@ var app = builder.Build();
 
     app.UseTracker<DatabaseContext>();
 
-    app.MapGet("/api/users", () => "Get all users")
+    app.MapGroup("/api/users")
+        .MapUserApi()
+        .WithTracking(tables: ["roles"]);
+
+    app.MapGet("/api/role", () => "Get all roles")
         .WithTracking(tables: ["roles"]);
 
     app.MapControllers();
