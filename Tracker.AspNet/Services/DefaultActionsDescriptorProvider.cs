@@ -14,15 +14,11 @@ public class DefaultActionsDescriptorProvider(EndpointDataSource endpointRouteBu
         foreach (var endpoint in endpointRouteBuilder.Endpoints)
         {
             if (endpoint is not RouteEndpoint routeEndpoint)
-            {
                 continue;
-            }
 
             var methods = routeEndpoint.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods ?? [];
             if (!methods.Any(c => c.Equals("GET", StringComparison.OrdinalIgnoreCase)))
-            {
                 continue;
-            }
 
             var controllerTracking = routeEndpoint.Metadata.GetMetadata<TrackAttribute>();
             if (controllerTracking is not null)
