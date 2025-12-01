@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System.Runtime.CompilerServices;
+using Tracker.AspNet.Extensions;
 using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Filters;
@@ -21,7 +21,7 @@ public sealed class ETagEndpointFilter : IEndpointFilter
 
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
-        if (IsGetMethod(context.HttpContext))
+        if (context.HttpContext.IsGetRequest())
         {
             var etagService = context.HttpContext.RequestServices.GetRequiredService<IETagService>();
             var token = context.HttpContext.RequestAborted;
@@ -40,7 +40,4 @@ public sealed class ETagEndpointFilter : IEndpointFilter
 
         return await next(context);
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsGetMethod(HttpContext context) => context.Request.Method == HttpMethod.Get.Method;
 }
