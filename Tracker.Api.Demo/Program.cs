@@ -30,9 +30,11 @@ var app = builder.Build();
 
     app.UseAuthorization();
 
-    //app.UseTracker<DatabaseContext>();
-    //app.UseTracker<DatabaseContext>(["roles"]);
-    //app.UseTracker<DatabaseContext>([typeof(Role)]);
+    app.UseTracker<DatabaseContext>(opt =>
+    {
+        opt.Tables = ["roles"];
+        opt.Entities = [typeof(Role)];
+    });
 
     app.MapGet("/api/role", () => "Get all roles")
         .WithTracking(tables: ["roles"]);

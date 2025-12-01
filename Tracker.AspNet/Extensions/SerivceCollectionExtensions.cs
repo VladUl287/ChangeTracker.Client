@@ -20,26 +20,23 @@ public static class SerivceCollectionExtensions
         return services;
     }
 
-    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder)
+    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, Action<MiddlewareOptions> configure)
         where TContext : DbContext
     {
-        return builder.UseMiddleware<TrackerMiddleware<TContext>>(new MiddlewareOptions());
-    }
+        var options = new MiddlewareOptions();
+        configure(options);
 
-    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, string[] tables)
-        where TContext : DbContext
-    {
-        return builder.UseMiddleware<TrackerMiddleware<TContext>>(new MiddlewareOptions { Tables = tables });
-    }
+        if (options.Entities is { Length: > 0 })
+        {
+            var scopeFactory = builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+            var tables = ResolveTables(dbContext, options.Entities);
 
-    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, Type[] entities)
-        where TContext : DbContext
-    {
-        var scopeFactory = builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
-        using var scope = scopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
-        var tables = ResolveTables(dbContext, entities);
-        return builder.UseMiddleware<TrackerMiddleware<TContext>>(new MiddlewareOptions { Tables = tables });
+            options.Tables = [.. options.Tables, .. tables];
+        }
+
+        return builder.UseMiddleware<TrackerMiddleware<TContext>>(options);
     }
 
     private static string[] ResolveTables<TContext>(TContext context, Type[] entities)

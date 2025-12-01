@@ -11,18 +11,19 @@ public sealed class TrackerMiddleware<TContext>(
 {
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.IsGetRequest())
+        if (!context.IsGetRequest())
         {
-            var token = context.RequestAborted;
-
-            var shouldReturnNotModified = await eTagService.TrySetETagAsync(context, options.Tables ?? [], token);
-            if (shouldReturnNotModified)
-            {
-                context.Response.StatusCode = StatusCodes.Status304NotModified;
-                return;
-            }
+            await next(context);
+            return;
         }
 
-        await next(context);
+        var token = context.RequestAborted;
+
+        var shouldReturnNotModified = await eTagService.TrySetETagAsync(context, options.Tables ?? [], token);
+        if (shouldReturnNotModified)
+        {
+            context.Response.StatusCode = StatusCodes.Status304NotModified;
+            return;
+        }
     }
 }
