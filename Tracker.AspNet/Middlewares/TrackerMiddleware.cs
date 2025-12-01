@@ -32,5 +32,7 @@ public sealed class TrackerMiddleware(RequestDelegate next, IETagService eTagSer
             context.Response.StatusCode = StatusCodes.Status304NotModified;
             return;
         }
+
+        await next(context);
     }
 }
