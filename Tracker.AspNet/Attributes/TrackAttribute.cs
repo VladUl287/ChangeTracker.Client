@@ -8,10 +8,31 @@ using Tracker.AspNet.Services.Contracts;
 namespace Tracker.AspNet.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-public sealed class TrackAttribute(string[]? tables = null, Type[]? entities = null) : Attribute, IAsyncActionFilter
+public sealed class TrackAttribute : Attribute, IAsyncActionFilter
 {
-    public string[]? Tables { get; } = tables;
-    public Type[]? Entities { get; } = entities;
+    public TrackAttribute()
+    {
+
+    }
+
+    public TrackAttribute(string[] tables)
+    {
+        ArgumentNullException.ThrowIfNull(tables, nameof(tables));
+    }
+
+    public TrackAttribute(Type[] entities)
+    {
+        ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+    }
+
+    public TrackAttribute(string[] tables, Type[] entities)
+    {
+        ArgumentNullException.ThrowIfNull(tables, nameof(tables));
+        ArgumentNullException.ThrowIfNull(entities, nameof(entities));
+    }
+
+    public string[] Tables { get; } = [];
+    public Type[] Entities { get; } = [];
 
     public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
@@ -20,7 +41,7 @@ public sealed class TrackAttribute(string[]? tables = null, Type[]? entities = n
             var etagService = context.HttpContext.RequestServices.GetRequiredService<IETagService>();
             var token = context.HttpContext.RequestAborted;
 
-            if (await etagService.TrySetETagAsync(context.HttpContext, tables, token))
+            if (await etagService.TrySetETagAsync(context.HttpContext, Tables, token))
             {
                 context.Result = new StatusCodeResult(StatusCodes.Status304NotModified);
                 return;

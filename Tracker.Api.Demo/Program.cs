@@ -3,6 +3,7 @@ using System.Reflection;
 using Tracker.Api.Demo.Database;
 using Tracker.Api.Demo.Extensions;
 using Tracker.AspNet.Extensions;
+using Tracker.AspNet.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 {
