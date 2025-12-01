@@ -30,8 +30,6 @@ var app = builder.Build();
 
     app.UseAuthorization();
 
-    app.UseTracker<DatabaseContext>();
-
     app.MapGroup("/api/users")
         .MapUserApi()
         .WithTracking(tables: ["roles"]);

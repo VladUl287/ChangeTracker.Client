@@ -28,33 +28,39 @@ public class DefaultActionsDescriptorProvider<TContext>(
             if (!methods.Any(c => c.Equals("GET", StringComparison.OrdinalIgnoreCase)))
                 continue;
 
-            var controllerTracking = routeEndpoint.Metadata.GetMetadata<TrackAttribute>();
-            if (controllerTracking is not null)
+            yield return new ActionDescriptor
             {
-                var route = routeEndpoint.RoutePattern.RawText ?? controllerTracking.Route ??
-                    throw new NullReferenceException($"Route for '{routeEndpoint.DisplayName}' not found.");
+                Route = "",
+                Tables = []
+            };
 
-                string[] tables = ResolveTables(dbContext, controllerTracking.Tables, controllerTracking.Entities);
-                yield return new ActionDescriptor
-                {
-                    Route = route,
-                    Tables = tables
-                };
-            }
+            //var controllerTracking = routeEndpoint.Metadata.GetMetadata<TrackAttribute>();
+            //if (controllerTracking is not null)
+            //{
+            //    var route = routeEndpoint.RoutePattern.RawText ?? controllerTracking.Route ??
+            //        throw new NullReferenceException($"Route for '{routeEndpoint.DisplayName}' not found.");
 
-            var trackRouteMetadata = routeEndpoint.Metadata.GetMetadata<TrackRouteMetadata>();
-            if (trackRouteMetadata is not null && routeEndpoint is { RoutePattern.RawText: not null })
-            {
-                var route = routeEndpoint.RoutePattern.RawText ?? trackRouteMetadata.Route ??
-                    throw new NullReferenceException($"Route for '{routeEndpoint.DisplayName}' not found.");
+            //    string[] tables = ResolveTables(dbContext, controllerTracking.Tables, controllerTracking.Entities);
+            //    yield return new ActionDescriptor
+            //    {
+            //        Route = route,
+            //        Tables = tables
+            //    };
+            //}
 
-                string[] tables = ResolveTables(dbContext,trackRouteMetadata.Tables, trackRouteMetadata.Entities);
-                yield return new ActionDescriptor
-                {
-                    Route = route,
-                    Tables = tables
-                };
-            }
+            //var trackRouteMetadata = routeEndpoint.Metadata.GetMetadata<TrackRouteMetadata>();
+            //if (trackRouteMetadata is not null && routeEndpoint is { RoutePattern.RawText: not null })
+            //{
+            //    var route = routeEndpoint.RoutePattern.RawText ?? trackRouteMetadata.Route ??
+            //        throw new NullReferenceException($"Route for '{routeEndpoint.DisplayName}' not found.");
+
+            //    string[] tables = ResolveTables(dbContext,trackRouteMetadata.Tables, trackRouteMetadata.Entities);
+            //    yield return new ActionDescriptor
+            //    {
+            //        Route = route,
+            //        Tables = tables
+            //    };
+            //}
         }
     }
 

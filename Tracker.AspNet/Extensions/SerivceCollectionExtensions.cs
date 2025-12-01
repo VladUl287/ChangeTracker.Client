@@ -10,12 +10,12 @@ namespace Tracker.AspNet.Extensions;
 
 public static class SerivceCollectionExtensions
 {
-    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder)
-        where TContext : DbContext
-    {
-        return builder
-            .UseMiddleware<TrackMiddleware<TContext>>();
-    }
+    //public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder)
+    //    where TContext : DbContext
+    //{
+    //    return builder
+    //        .UseMiddleware<TrackMiddleware<TContext>>();
+    //}
 
     public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, params Assembly[] assemblies)
          where TContext : DbContext

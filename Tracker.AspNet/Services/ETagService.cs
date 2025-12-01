@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tracker.AspNet.Logging;
-using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Extensions;
 
@@ -12,7 +11,7 @@ namespace Tracker.AspNet.Services;
 public class ETagService<TContext>(
     IETagGenerator etagGenerator, ILogger<ETagService<TContext>> logger) : IETagService where TContext : DbContext
 {
-    public async Task<bool> TrySetETagAsync(HttpContext context, ActionDescriptor descriptor, CancellationToken token = default)
+    public async Task<bool> TrySetETagAsync(HttpContext context, string[] tables, CancellationToken token = default)
     {
         if (context.Response.Headers.ContainsKey("ETag"))
         {
@@ -27,7 +26,7 @@ public class ETagService<TContext>(
             return false;
         }
 
-        var table = descriptor.Tables[0];
+        var table = tables[0];
         var lastTimestamp = await dbContext.GetLastTimestamp(table, token);
         if (string.IsNullOrEmpty(lastTimestamp))
         {
