@@ -29,11 +29,16 @@ public static class MinimalApiExtensions
     {
         return endpoint.AddEndpointFilterFactory((provider, next) =>
         {
-            var dbContext = provider.ApplicationServices.GetRequiredService<TContext>();
+            var scopeFactory = provider.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
             var tables = ResolveTables(dbContext, entities);
-            var logger = provider.ApplicationServices.GetRequiredService<ILogger<ETagEndpointFilter>>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<ETagEndpointFilter>>();
             var filter = new ETagEndpointFilter(tables);
-            return (context) => filter.InvokeAsync(context, next);
+            return (context) =>
+            {
+                return filter.InvokeAsync(context, next);
+            };
         });
     }
 
