@@ -20,12 +20,10 @@ public sealed class TrackAttribute() : Attribute, IAsyncActionFilter
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var httpContext = context.HttpContext;
-
-        var requestFilter = httpContext.RequestServices.GetRequiredService<IRequestFilter>();
-
         static GlobalOptions optionsProvider(HttpContext ctx) => ctx.RequestServices.GetRequiredService<GlobalOptions>();
 
+        var httpContext = context.HttpContext;
+        var requestFilter = httpContext.RequestServices.GetRequiredService<IRequestFilter>();
         var shouldProcessRequest = requestFilter.ShouldProcessRequest(httpContext, optionsProvider, httpContext);
         if (!shouldProcessRequest)
         {
