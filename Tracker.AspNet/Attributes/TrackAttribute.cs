@@ -25,7 +25,7 @@ public sealed class TrackAttribute() : Attribute, IAsyncActionFilter
         var context = execContext.HttpContext;
 
         var requestFilter = context.RequestServices.GetRequiredService<IRequestFilter>();
-        var shouldProcessRequest = requestFilter.ShouldProcessRequest(context, filter);
+        var shouldProcessRequest = requestFilter.ShouldProcessRequest(context, filter, context);
         if (!shouldProcessRequest)
         {
             await next();

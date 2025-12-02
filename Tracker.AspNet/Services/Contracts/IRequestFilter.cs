@@ -4,5 +4,5 @@ namespace Tracker.AspNet.Services.Contracts;
 
 public interface IRequestFilter
 {
-    bool ShouldProcessRequest(HttpContext context, Func<HttpContext, bool> filter);
+    bool ShouldProcessRequest<TState>(HttpContext context, Func<TState, bool> filter, TState state);
 }

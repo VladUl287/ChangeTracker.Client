@@ -9,7 +9,7 @@ namespace Tracker.AspNet.Services;
 
 public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) : IRequestFilter
 {
-    public bool ShouldProcessRequest(HttpContext context, Func<HttpContext, bool> filter)
+    public bool ShouldProcessRequest<TState>(HttpContext context, Func<TState, bool> filter, TState state)
     {
         if (!HttpMethods.IsGet(context.Request.Method))
         {
@@ -29,7 +29,7 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
             return false;
         }
 
-        if (!filter(context))
+        if (!filter(state))
         {
             logger.LogFilterRejected(context.Request.Path);
             return false;
