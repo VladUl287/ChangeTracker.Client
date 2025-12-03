@@ -1,5 +1,5 @@
-﻿using Tracker.AspNet.Models;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Middlewares;

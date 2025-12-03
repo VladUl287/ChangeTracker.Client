@@ -53,7 +53,7 @@ public sealed class TrackAttribute : Attribute, IAsyncActionFilter
     {
         if (_actionOptions is not null)
             return _actionOptions;
-        
+
         lock (_lock)
         {
             if (_actionOptions is not null)

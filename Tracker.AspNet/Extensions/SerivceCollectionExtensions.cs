@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Tracker.AspNet.Middlewares;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services;
 using Tracker.AspNet.Services.Contracts;

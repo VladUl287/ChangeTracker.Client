@@ -9,7 +9,7 @@ namespace Tracker.AspNet.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
-    public static IApplicationBuilder UseTracker(this IApplicationBuilder builder) 
+    public static IApplicationBuilder UseTracker(this IApplicationBuilder builder)
         => builder.UseMiddleware<TrackerMiddleware>();
 
     public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, GlobalOptions options)

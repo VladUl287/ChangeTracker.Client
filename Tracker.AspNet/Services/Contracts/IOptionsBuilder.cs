@@ -2,7 +2,7 @@
 
 namespace Tracker.AspNet.Services.Contracts;
 
-public interface IOptionsBuilder<TMutalbe, TImmutable> 
+public interface IOptionsBuilder<TMutalbe, TImmutable>
     where TMutalbe : class
     where TImmutable : class
 {
