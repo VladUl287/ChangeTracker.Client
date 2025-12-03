@@ -8,7 +8,7 @@ using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Extensions;
 
-public static class MinimalApiExtensions
+public static class EndpointBuilderExtensions
 {
     public static IEndpointConventionBuilder WithTracking(this IEndpointConventionBuilder endpoint)
     {
