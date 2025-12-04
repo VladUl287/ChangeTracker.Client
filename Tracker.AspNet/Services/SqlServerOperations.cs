@@ -1,0 +1,24 @@
+﻿using System.Data.Common;
+using Tracker.AspNet.Services.Contracts;
+
+namespace Tracker.AspNet.Services;
+
+public sealed class SqlServerOperations(DbDataSource datSource) : ISourceOperations
+{
+    public string SourceId => throw new NotImplementedException();
+
+    public Task<DateTimeOffset?> GetLastTimestamp(string key, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<DateTimeOffset>> GetLastTimestamp(string[] keys, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<DateTimeOffset?> GetLastTimestamp(CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+}
