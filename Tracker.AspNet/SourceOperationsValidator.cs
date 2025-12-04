@@ -8,12 +8,16 @@ public sealed class SourceOperationsValidator(IEnumerable<ISourceOperations> ope
 {
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
-        ValidateDuplicates();
+        ValidateSourceOperationsProviders();
         return next;
     }
 
-    private void ValidateDuplicates()
+    private void ValidateSourceOperationsProviders()
     {
+        if (!operations.Any())
+            throw new InvalidOperationException(
+                "At least one ISourceOperations implementation is required");
+
         var duplicates = operations
             .GroupBy(o => o.SourceId)
             .Where(g => g.Count() > 1)
