@@ -28,7 +28,10 @@ public static class SerivceCollectionExtensions
         });
 
         services.AddSingleton<IETagGenerator, ETagGenerator>();
-        services.AddSingleton<IETagService, ETagService<TContext>>();
+        services.AddSingleton<IETagService, ETagService>();
+
+        services.AddSingleton<IDbOperationsFactory, DbOperationsFactory>();
+        services.AddSingleton<IDbOperations<TContext>, NpgsqlDbOperations<TContext>>();
 
         services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
 

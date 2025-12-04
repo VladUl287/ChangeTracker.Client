@@ -3,5 +3,5 @@
 public interface IDbOperationsFactory
 {
     IDbOperations Create(string provider);
-    IDbOperations Create<TContext>(string provider);
+    IDbOperations<TContext> Create<TContext>(string provider);
 }
