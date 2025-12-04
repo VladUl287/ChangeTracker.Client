@@ -30,8 +30,15 @@ public static class SerivceCollectionExtensions
         services.AddSingleton<IETagGenerator, ETagGenerator>();
         services.AddSingleton<IETagService, ETagService>();
 
-        services.AddSingleton<IDbOperationsFactory, DbOperationsFactory>();
-        services.AddSingleton<IDbOperations<TContext>, NpgsqlDbOperations<TContext>>();
+        services.AddSingleton<ISourceOperationsResolver, SourceOperationsResolver>();
+        services.AddSingleton<ISourceOperations>((provider) =>
+        {
+            using var scope = provider.CreateScope();
+            using var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+            var connectionString = dbContext.Database.GetConnectionString() ?? 
+                throw new NullReferenceException("Connaction string is null");
+            return new NpgsqlOperations(connectionString);
+        });
 
         services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
 

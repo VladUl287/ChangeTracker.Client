@@ -42,7 +42,7 @@ public sealed class TrackAttribute<TContext> : Attribute, IAsyncActionFilter
             return;
 
         var etagService = execContext.HttpContext.RequestServices.GetRequiredService<IETagService>();
-        var shouldReturnNotModified = await etagService.TrySetETagAsync<TContext>(httpCtx, options, canceltoken);
+        var shouldReturnNotModified = await etagService.TrySetETagAsync(httpCtx, options, canceltoken);
         if (!shouldReturnNotModified)
         {
             await next();
