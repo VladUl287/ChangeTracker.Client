@@ -52,7 +52,7 @@ public sealed class NpgsqlDbOperations<TContext>(IServiceScopeFactory scopeFacto
 
             var result = await command.ExecuteScalarAsync(token);
             var res = result?.ToString();
-            return res is null ? null : DateTimeOffset.Parse(res);
+            return string.IsNullOrEmpty(res) ? null : DateTimeOffset.Parse(res);
         }
         finally
         {
