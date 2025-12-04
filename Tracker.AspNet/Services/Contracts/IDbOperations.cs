@@ -2,6 +2,7 @@
 
 public interface IDbOperations
 {
+    //string ConnectionId { get; init; }
     string Provider { get; init; }
     Task<DateTimeOffset?> GetLastTimestamp(string table, CancellationToken token);
     Task<uint?> GetLastCommittedXact(CancellationToken token);
