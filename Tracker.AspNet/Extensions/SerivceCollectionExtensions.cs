@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -37,15 +38,18 @@ public static class SerivceCollectionExtensions
 
         services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
 
+        services.AddSingleton<IStartupFilter, SourceOperationsValidator>();
+
         return services;
     }
 
-    public static IServiceCollection AddSqlServer(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddSqlServer(this IServiceCollection services, string sourceId, string connectionString)
     {
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
         return services.AddSingleton<ISourceOperations>((provider) =>
             new SqlServerOperations(
-                SqlClientFactory.Instance.CreateDataSource(connectionString)
+               sourceId,
+               SqlClientFactory.Instance.CreateDataSource(connectionString)
             )
         );
     }
@@ -61,10 +65,11 @@ public static class SerivceCollectionExtensions
             var connectionString = dbContext.Database.GetConnectionString() ??
                 throw new NullReferenceException($"Connection string is not found for context {typeof(TContext).FullName}.");
 
+            var sourceId = typeof(TContext).GetTypeHashId();
             var factory = SqlClientFactory.Instance;
             var dataSource = factory.CreateDataSource(connectionString);
 
-            return new SqlServerOperations(dataSource);
+            return new SqlServerOperations(sourceId, dataSource);
         });
     }
 
@@ -82,17 +87,17 @@ public static class SerivceCollectionExtensions
             var sourceId = typeof(TContext).GetTypeHashId();
             var builder = new NpgsqlDataSourceBuilder(connectionString);
             var dataSource = builder.Build();
+
             return new NpgsqlOperations(sourceId, dataSource);
         });
     }
 
-    public static IServiceCollection AddNpgsql(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddNpgsql(this IServiceCollection services, string sourceId, string connectionString)
     {
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
         return services.AddSingleton<ISourceOperations>(
             new NpgsqlOperations(
-                string.Empty,
-                new NpgsqlDataSourceBuilder(connectionString).Build()
+                sourceId, new NpgsqlDataSourceBuilder(connectionString).Build()
             )
         );
     }

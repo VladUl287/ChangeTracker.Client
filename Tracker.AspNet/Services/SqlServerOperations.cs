@@ -3,9 +3,9 @@ using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 
-public sealed class SqlServerOperations(DbDataSource dataSource) : ISourceOperations
+public sealed class SqlServerOperations(string sourceId, DbDataSource dataSource) : ISourceOperations
 {
-    public string SourceId => string.Empty;
+    public string SourceId => sourceId;
 
     public async Task<DateTimeOffset?> GetLastTimestamp(string key, CancellationToken token)
     {
