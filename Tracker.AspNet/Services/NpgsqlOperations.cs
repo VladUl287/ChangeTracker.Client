@@ -4,8 +4,23 @@ using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 
-public sealed class NpgsqlOperations(string sourceId, NpgsqlDataSource dataSource) : ISourceOperations
+public sealed class NpgsqlOperations : ISourceOperations
 {
+    private readonly string sourceId;
+    private readonly NpgsqlDataSource dataSource;
+
+    public NpgsqlOperations(string sourceId, NpgsqlDataSource dataSource)
+    {
+        this.sourceId = sourceId;
+        this.dataSource = dataSource;
+    }
+
+    public NpgsqlOperations(string sourceId, string connectionString)
+    {
+        this.sourceId = sourceId;
+        dataSource = new NpgsqlDataSourceBuilder(connectionString).Build();
+    }
+
     public string SourceId => sourceId;
 
     public async Task<DateTimeOffset?> GetLastTimestamp(string key, CancellationToken token)
