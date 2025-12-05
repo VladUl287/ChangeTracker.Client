@@ -3,7 +3,6 @@ TODO:
     - Use AssemblyWriteTime in etag generator
     - Add suffix in etag generator from tracker options
     - NpgsqlDataSource get timestamp like DateTimeOffset without cast
-    - Different cache-control predefined profiles and cache-control value builder
     - Etag make it value type and not string
     - Add global options validation
     - Make global options extensible
