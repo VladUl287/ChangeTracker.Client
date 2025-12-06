@@ -11,7 +11,7 @@ public abstract class TrackAttributeBase : Attribute, IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext execContext, ActionExecutionDelegate next)
     {
-        var options = GetOrSetOptions(execContext);
+        var options = GetOptions(execContext);
 
         var httpCtx = execContext.HttpContext;
         if (RequestValid(httpCtx, options) && await NotModified(httpCtx, options))
@@ -32,5 +32,5 @@ public abstract class TrackAttributeBase : Attribute, IAsyncActionFilter
             .GetRequiredService<IETagService>()
             .TrySetETagAsync(httpCtx, options, httpCtx.RequestAborted);
 
-    protected abstract ImmutableGlobalOptions GetOrSetOptions(ActionExecutingContext execContext);
+    protected abstract ImmutableGlobalOptions GetOptions(ActionExecutingContext execContext);
 }

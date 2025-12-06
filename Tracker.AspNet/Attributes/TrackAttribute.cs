@@ -14,7 +14,7 @@ public sealed class TrackAttribute(
     private ImmutableGlobalOptions? _actionOptions;
     private readonly Lock _lock = new();
 
-    protected override ImmutableGlobalOptions GetOrSetOptions(ActionExecutingContext execContext)
+    protected override ImmutableGlobalOptions GetOptions(ActionExecutingContext execContext)
     {
         if (_actionOptions is not null)
             return _actionOptions;
