@@ -19,6 +19,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddNpgsqlSource<TContext>(this IServiceCollection services, string sourceId)
          where TContext : DbContext
     {
+        ArgumentException.ThrowIfNullOrEmpty(sourceId);
+
         return services.AddSingleton<ISourceOperations>((provider) =>
         {
             using var scope = provider.CreateScope();
@@ -36,7 +38,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddNpgsqlSource(this IServiceCollection services, string sourceId, string connectionString)
     {
+        ArgumentException.ThrowIfNullOrEmpty(sourceId);
         ArgumentException.ThrowIfNullOrEmpty(connectionString);
+
         return services.AddSingleton<ISourceOperations>(
             new NpgsqlOperations(
                 sourceId, new NpgsqlDataSourceBuilder(connectionString).Build()
@@ -46,6 +50,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddNpgsqlSource(this IServiceCollection services, string sourceId, Action<NpgsqlDataSourceBuilder> configure)
     {
+        ArgumentNullException.ThrowIfNull(configure);
+        ArgumentException.ThrowIfNullOrEmpty(sourceId);
+
         return services.AddSingleton<ISourceOperations>((_) =>
         {
             var dataSourceBuilder = new NpgsqlDataSourceBuilder();
