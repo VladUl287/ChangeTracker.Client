@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
@@ -15,11 +17,7 @@ public class ETagService(
         ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        var sourceOperations = options.SourceOperations ??
-            options.SourceOperationsFactory?.Invoke(context) ??
-            operationsResolver.Resolve(options.Source);
-
-        var etag = await GetETag(context, options, sourceOperations, token);
+        var etag = await GenerateETag(context, options, token);
         if (etag is null)
         {
             logger.LogLastTimestampNotFound();
@@ -41,28 +39,28 @@ public class ETagService(
         return false;
     }
 
-    private async Task<string?> GetETag(HttpContext ctx, ImmutableGlobalOptions options, ISourceOperations dbOpeartions, CancellationToken token)
+    private async Task<string?> GenerateETag(HttpContext ctx, ImmutableGlobalOptions options, CancellationToken token)
     {
+        var sourceOperations = ResolveOperationsProvider(ctx, options, operationsResolver);
+
         var suffix = options.Suffix(ctx);
         if (options is { Tables.Length: 0 })
         {
-            var xact = await dbOpeartions.GetLastTimestamp(token);
-            if (xact is null)
+            var timestamp = await sourceOperations.GetLastTimestamp(token);
+            if (timestamp is null) 
                 return null;
-
-            return etagGenerator.GenerateETag(xact.Value, suffix);
+            return etagGenerator.GenerateETag(timestamp.Value, suffix);
         }
 
-        var timestamps = new List<DateTimeOffset>(options.Tables.Length);
-        foreach (var table in options.Tables)
-        {
-            var lastTimestamp = await dbOpeartions.GetLastTimestamp(table, token);
-            if (lastTimestamp is null)
-                return null;
-
-            timestamps.Add(lastTimestamp.Value);
-        }
-
-        return etagGenerator.GenerateETag([.. timestamps], suffix);
+        var timestamps = ArrayPool<DateTimeOffset>.Shared.Rent(options.Tables.Length);
+        await sourceOperations.GetLastTimestamps(options.Tables, timestamps, token);
+        var etag = etagGenerator.GenerateETag(timestamps, suffix);
+        ArrayPool<DateTimeOffset>.Shared.Return(timestamps);
+        return etag;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ISourceOperations ResolveOperationsProvider(
+        HttpContext ctx, ImmutableGlobalOptions opt, ISourceOperationsResolver srcResolver) =>
+        opt.SourceOperations ?? opt.SourceOperationsFactory?.Invoke(ctx) ?? srcResolver.Resolve(opt.Source);
 }
