@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.Extensions.Logging;
 using System.Buffers;
 using System.Runtime.CompilerServices;
@@ -57,6 +56,12 @@ public class ETagService(
         var incomingETag = ctx.Request.Headers.IfNoneMatch[0].AsSpan();
 
         var fullLength = asBuildTime.Length + 2 + ltDigitCount + suffix.Length;
+        if (fullLength != incomingETag.Length)
+        {
+            ctx.Response.Headers.CacheControl = options.CacheControl;
+            ctx.Response.Headers.ETag = BuildETag(fullLength, (asBuildTime, ltValue, suffix));
+            return false;
+        }
 
         var rightEdge = asBuildTime.Length;
         var inAsBuildTime = incomingETag[..rightEdge];
