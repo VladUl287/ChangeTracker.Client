@@ -32,7 +32,7 @@ public class ETagService(
             await sourceOperations.GetLastTimestamps(options.Tables, timestamps, token);
 
             var hash = new XxHash32();
-            foreach (var tmsmp in timestamps)
+            foreach (var tmsmp in timestamps.AsSpan()[..options.Tables.Length])
                 hash.Append(BitConverter.GetBytes(tmsmp.Ticks));
             ltValue = hash.GetCurrentHashAsUInt32();
 
@@ -44,7 +44,7 @@ public class ETagService(
         var asBuildTime = etagGenerator.AssemblyBuildTimeTicks;
         var ltDigitCount = DigitCountLog(ltValue);
         var suffix = options.Suffix(ctx);
-        var fullLength = asBuildTime.Length + 2 + ltDigitCount + suffix.Length;
+        var fullLength = asBuildTime.Length + 1 + ltDigitCount + suffix.Length + (suffix.Length > 0 ? 1 : 0);
 
         if (incomingETag is not null && ETagEqual(incomingETag, ltValue, asBuildTime, suffix))
         {
@@ -64,7 +64,7 @@ public class ETagService(
     {
         var ltDigitCount = DigitCountLog(lTimestamp);
 
-        var fullLength = asBuildTime.Length + 2 + ltDigitCount + suffix.Length;
+        var fullLength = asBuildTime.Length + 1 + ltDigitCount + suffix.Length + (suffix.Length > 0 ? 1 : 0);
         if (fullLength != inETag.Length)
             return false;
 
@@ -78,7 +78,11 @@ public class ETagService(
         if (!CompareStringWithLong(inTicks, lTimestamp))
             return false;
 
-        var inSuffix = incomingETag[rightEdge..];
+        rightEdge += ltDigitCount;
+        if (rightEdge == incomingETag.Length)
+            return true;
+
+        var inSuffix = incomingETag[++rightEdge..];
         if (!inSuffix.Equals(suffix, StringComparison.Ordinal))
             return false;
 
@@ -110,10 +114,13 @@ public class ETagService(
             chars[position++] = '-';
 
             state.LastTimestamp.TryFormat(chars[position..], out var written);
-            position += written;
-            chars[position++] = '-';
 
-            state.Suffix.AsSpan().CopyTo(chars[position..]);
+            if (!string.IsNullOrEmpty(state.Suffix))
+            {
+                position += written;
+                chars[position++] = '-';
+                state.Suffix.AsSpan().CopyTo(chars[position..]);
+            }
         });
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
