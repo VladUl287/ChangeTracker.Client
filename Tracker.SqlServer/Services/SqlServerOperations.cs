@@ -67,6 +67,21 @@ public sealed class SqlServerOperations : ISourceOperations, IDisposable
         _disposed = true;
     }
 
+    public Task<bool> EnableTracking(string key, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> DisableTracking(string key, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> IsTracked(string key, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
+
     ~SqlServerOperations()
     {
         Dispose(disposing: false);

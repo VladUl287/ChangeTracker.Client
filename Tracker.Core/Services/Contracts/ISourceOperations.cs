@@ -8,4 +8,9 @@ public interface ISourceOperations
     Task<DateTimeOffset> GetLastTimestamp(string key, CancellationToken token);
     Task GetLastTimestamps(ImmutableArray<string> keys, DateTimeOffset[] timestamps, CancellationToken token);
     Task<DateTimeOffset> GetLastTimestamp(CancellationToken token);
+
+    Task<bool> EnableTracking(string key, CancellationToken token);
+    Task<bool> DisableTracking(string key, CancellationToken token);
+
+    Task<bool> IsTracked(string key, CancellationToken token);
 }
