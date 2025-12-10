@@ -24,5 +24,5 @@ public sealed class CacheControlBuilder
     public CacheControlBuilder WithStaleWhileRevalidate(TimeSpan duration) => WithDirective($"stale-while-revalidate={duration.TotalSeconds}");
     public CacheControlBuilder WithStaleIfError(TimeSpan duration) => WithDirective($"stale-if-error={duration.TotalSeconds}");
 
-    public string Build() => $"Cache-Control: {string.Join(", ", _directives)}";
+    public string Combine() => string.Join(", ", _directives);
 }

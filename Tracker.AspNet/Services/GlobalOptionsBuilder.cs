@@ -14,7 +14,7 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
 {
     public ImmutableGlobalOptions Build(GlobalOptions options)
     {
-        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Build();
+        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine();
 
         return new ImmutableGlobalOptions
         {
@@ -36,7 +36,7 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
         var sourceIdGenerator = scope.ServiceProvider.GetRequiredService<ISourceIdGenerator>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<GlobalOptionsBuilder>>();
 
-        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Build();
+        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine();
         var tables = GetAndCombineTablesNames(options, dbContext, logger);
 
         return new ImmutableGlobalOptions
