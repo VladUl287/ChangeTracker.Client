@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Tracker.Core.Services.Contracts;
 
-namespace Tracker.AspNet;
+namespace Tracker.AspNet.Services;
 
 public sealed class SourceOperationsValidator(IEnumerable<ISourceOperations> operations) : IStartupFilter
 {

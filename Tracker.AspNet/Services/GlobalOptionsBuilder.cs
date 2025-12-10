@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Extensions;
+using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 
@@ -29,13 +30,14 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
     {
         using var scope = scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
+        var sourceIdGenerator = scope.ServiceProvider.GetRequiredService<ISourceIdGenerator>();
 
         var tablesNames = dbContext.GetTablesNames(options.Entities);
         var tables = new HashSet<string>([.. options.Tables, .. tablesNames]).ToImmutableArray();
 
         var source = options.Source;
-        if (string.IsNullOrEmpty(source) && options is { SourceOperations: null, SourceOperationsFactory: null })
-            source = typeof(TContext).GetTypeHashId();
+        if (options is { Source: null, SourceOperations: null, SourceOperationsFactory: null })
+            source = sourceIdGenerator.GenerateId<TContext>();
 
         var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Build();
 

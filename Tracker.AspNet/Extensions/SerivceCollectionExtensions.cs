@@ -19,26 +19,13 @@ public static class SerivceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        services.AddSingleton<ITimestampsHasher, XxHash64Hasher>();
-
-        services.AddSingleton<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>, GlobalOptionsBuilder>();
-
         services.AddSingleton((provider) =>
         {
             var optionsBuilder = provider.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
             return optionsBuilder.Build(options);
         });
 
-        services.AddSingleton<IETagService>(new ETagService(Assembly.GetExecutingAssembly()));
-        services.AddSingleton<IRequestHandler, RequestHandler>();
-
-        services.AddSingleton<ISourceOperationsResolver, SourceOperationsResolver>();
-
-        services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
-
-        services.AddSingleton<IStartupFilter, SourceOperationsValidator>();
-
-        return services;
+        return services.AddTrackerBase();
     }
 
     public static IServiceCollection AddTracker(this IServiceCollection services, Action<GlobalOptions> configure)
@@ -58,13 +45,32 @@ public static class SerivceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        services.AddSingleton<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>, GlobalOptionsBuilder>();
-
         services.AddSingleton((provider) =>
         {
             var optionsBuilder = provider.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
             return optionsBuilder.Build<TContext>(options);
         });
+
+        return services.AddTrackerBase();
+    }
+
+    public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, Action<GlobalOptions> configure)
+         where TContext : DbContext
+    {
+        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+
+        var options = new GlobalOptions();
+        configure(options);
+        return services.AddTracker<TContext>(options);
+    }
+
+    private static IServiceCollection AddTrackerBase(this IServiceCollection services)
+    {
+        services.AddSingleton<ISourceIdGenerator, DefaultSourceIdGenerator>();
+
+        services.AddSingleton<ITimestampsHasher, XxHash64Hasher>();
+
+        services.AddSingleton<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>, GlobalOptionsBuilder>();
 
         services.AddSingleton<IETagService>(new ETagService(Assembly.GetExecutingAssembly()));
         services.AddSingleton<IRequestHandler, RequestHandler>();
@@ -78,13 +84,4 @@ public static class SerivceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, Action<GlobalOptions> configure)
-         where TContext : DbContext
-    {
-        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
-
-        var options = new GlobalOptions();
-        configure(options);
-        return services.AddTracker<TContext>(options);
-    }
 }

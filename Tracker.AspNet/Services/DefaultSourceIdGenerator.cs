@@ -1,14 +1,17 @@
-﻿using System.Text;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Buffers;
 using System.IO.Hashing;
+using System.Text;
+using Tracker.Core.Services.Contracts;
 
-namespace Tracker.Core.Extensions;
+namespace Tracker.AspNet.Services;
 
-public static class TypesExtensions
+public sealed class DefaultSourceIdGenerator : ISourceIdGenerator
 {
-    public static string GetTypeHashId(this Type type)
+    public string GenerateId<TContext>() where TContext : DbContext
     {
-        var typeName = type.FullName ?? throw new NullReferenceException();
+        var typeName = typeof(TContext).FullName ??
+            throw new NullReferenceException("Not correct type FullName for correct hash generation");
 
         var maximumBytes = Encoding.UTF8.GetMaxByteCount(typeName.Length);
 

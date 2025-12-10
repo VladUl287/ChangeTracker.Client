@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Extensions;
+using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Attributes;
 
@@ -35,17 +36,16 @@ public sealed class TrackAttribute<TContext>(
             var serviceProvider = scope.ServiceProvider;
             var options = serviceProvider.GetRequiredService<ImmutableGlobalOptions>();
             var opResolver = serviceProvider.GetRequiredService<ISourceOperationsResolver>();
+            var sourceIdGenerator = serviceProvider.GetRequiredService<ISourceIdGenerator>();
             var logger = serviceProvider.GetRequiredService<ILogger<TrackAttribute<TContext>>>();
 
-            var tablesNames = GetAndCombineTablesNames(tables, entities, serviceProvider, logger);
-
-            cacheControl ??= options.CacheControl;
+             cacheControl ??= options.CacheControl;
             if (sourceId is null)
             {
-                var dbHashId = typeof(TContext).GetTypeHashId();
-                if (opResolver.Registered(dbHashId))
+                var generatedSourceId = sourceIdGenerator.GenerateId<TContext>();
+                if (opResolver.Registered(generatedSourceId))
                 {
-                    sourceId = dbHashId;
+                    sourceId = generatedSourceId;
                     logger.LogInformation("Source id {sourceId} taked from TContext type hash due param source id is null.", sourceId);
                 }
                 else
@@ -59,7 +59,7 @@ public sealed class TrackAttribute<TContext>(
             {
                 Source = sourceId,
                 CacheControl = cacheControl,
-                Tables = tablesNames
+                Tables = GetAndCombineTablesNames(tables, entities, serviceProvider, logger)
             };
         }
     }
