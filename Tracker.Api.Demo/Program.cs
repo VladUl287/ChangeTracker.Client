@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tracker.Api.Demo.Database;
+using Tracker.Api.Demo.Database.Entities;
 using Tracker.AspNet.Extensions;
 using Tracker.Npgsql.Extensions;
 using Tracker.SqlServer.Extensions;
@@ -48,12 +49,12 @@ var app = builder.Build();
 
     app.UseAuthorization();
 
-    //app.UseTracker<DatabaseContext>(opt =>
-    //{
-    //    opt.Tables = ["roles"];
-    //    opt.Entities = [typeof(Role)];
-    //    opt.Filter = (ctx) => ctx.Request.Path.ToString().Contains("roles");
-    //});
+    app.UseTracker<DatabaseContext>(opt =>
+    {
+        opt.Tables = ["roles"];
+        opt.Entities = [typeof(Role)];
+        opt.Filter = (ctx) => ctx.Request.Path.ToString().Contains("roles");
+    });
 
     //app.MapGet("/api/role", () => "Get all roles")
     //    .WithTracking();

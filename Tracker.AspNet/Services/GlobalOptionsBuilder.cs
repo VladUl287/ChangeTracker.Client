@@ -39,10 +39,14 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
         var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine();
         var tables = GetAndCombineTablesNames(options, dbContext, logger);
 
+        var sourceId = options.Source;
+        if (options is { Source: null, SourceOperations: null, SourceOperationsFactory: null })
+            sourceId = sourceIdGenerator.GenerateId<TContext>();
+
         return new ImmutableGlobalOptions
         {
             Tables = tables,
-            Source = options.Source,
+            Source = sourceId,
             Filter = options.Filter,
             Suffix = options.Suffix,
             CacheControl = cacheControl,
