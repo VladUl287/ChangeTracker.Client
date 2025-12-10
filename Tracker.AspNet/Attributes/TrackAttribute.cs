@@ -36,7 +36,7 @@ public sealed class TrackAttribute(
                 Source = sourceId ?? options.Source,
                 Tables = tables?.ToImmutableArray() ?? []
             };
-            logger.LogOptionsBuilded(ctx.ActionDescriptor.DisplayName ?? ctx.ActionDescriptor.Id, _actionOptions);
+            logger.LogOptionsBuilded(ctx.ActionDescriptor.DisplayName ?? ctx.ActionDescriptor.Id);
             return _actionOptions;
         }
     }

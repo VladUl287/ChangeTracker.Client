@@ -50,7 +50,7 @@ public sealed class TrackAttribute<TContext>(
                 CacheControl = cacheControl,
                 Tables = GetAndCombineTablesNames(ctx, tables, entities, serviceProvider, logger)
             };
-            logger.LogOptionsBuilded(GetActionName(ctx), _actionOptions);
+            logger.LogOptionsBuilded(GetActionName(ctx));
             return _actionOptions;
         }
     }
