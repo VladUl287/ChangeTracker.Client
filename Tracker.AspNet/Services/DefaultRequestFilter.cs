@@ -50,7 +50,8 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
         const string NO_STORE = "no-store";
         foreach (var header in cacheControlHeaders)
         {
-            if (header is not null && (header.Contains(IMMUTABLE) || header.Contains(NO_STORE)))
+            if (header != null && header.Contains(IMMUTABLE, StringComparison.OrdinalIgnoreCase) && 
+                header.Contains(NO_STORE, StringComparison.OrdinalIgnoreCase))
                 return true;
         }
 
