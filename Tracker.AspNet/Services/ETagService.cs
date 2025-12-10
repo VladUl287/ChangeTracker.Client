@@ -67,5 +67,4 @@ public class ETagService(Assembly executionAssembly) : IETagService
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ComputeLength(int lastTimestampDigitsCount, string suffix) =>
         _assemblyBuildTime.Length + lastTimestampDigitsCount + suffix.Length + (suffix.Length > 0 ? 2 : 1);
-
 }
