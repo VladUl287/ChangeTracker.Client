@@ -12,6 +12,7 @@ public sealed class XxHash64Hasher : ITimestampsHasher
     {
         const int BufferSizeThreshold = 128;
 
+        var bufferSize = timestamps.Length * sizeof(long);
         if (BitConverter.IsLittleEndian)
         {
             Span<long> ticks = stackalloc long[timestamps.Length];
@@ -20,9 +21,6 @@ public sealed class XxHash64Hasher : ITimestampsHasher
 
             return XxHash64.HashToUInt64(MemoryMarshal.AsBytes(ticks));
         }
-
-        var bufferSize = timestamps.Length * sizeof(long);
-        Span<byte> buffer = stackalloc byte[bufferSize];
 
         if (bufferSize >= BufferSizeThreshold)
         {
@@ -38,6 +36,7 @@ public sealed class XxHash64Hasher : ITimestampsHasher
             return XxHash64.HashToUInt64(bufferArr);
         }
 
+        Span<byte> buffer = stackalloc byte[bufferSize];
         for (int i = 0; i < timestamps.Length; i++)
             BinaryPrimitives.WriteInt64LittleEndian(
                 buffer.Slice(i * sizeof(long), sizeof(long)),
