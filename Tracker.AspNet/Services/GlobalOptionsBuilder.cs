@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
+using Tracker.AspNet.Utils;
 using Tracker.Core.Extensions;
 using Tracker.Core.Services.Contracts;
 
@@ -12,10 +13,11 @@ namespace Tracker.AspNet.Services;
 
 public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>
 {
+    private static readonly string _defaultCacheControl = new CacheControlBuilder().WithNoCache().Combine();
+
     public ImmutableGlobalOptions Build(GlobalOptions options)
     {
-        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine();
-
+        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine() ?? _defaultCacheControl;
         return new ImmutableGlobalOptions
         {
             Source = options.Source,
@@ -36,7 +38,7 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
         var sourceIdGenerator = scope.ServiceProvider.GetRequiredService<ISourceIdGenerator>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<GlobalOptionsBuilder>>();
 
-        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine();
+        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine() ?? _defaultCacheControl;
         var tables = GetAndCombineTablesNames(options, dbContext, logger);
 
         var sourceId = options.Source;
