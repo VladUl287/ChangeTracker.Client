@@ -12,10 +12,10 @@ public static class DbContextExtensions
         foreach (var entity in entities)
         {
             var entityType = context.Model.FindEntityType(entity) ??
-                throw new NullReferenceException($"Table entity type not found for type {entity.FullName}");
+                throw new NullReferenceException($"Table entity type not found for type '{entity.FullName}'");
 
             var tableName = entityType.GetSchemaQualifiedTableName() ??
-                throw new NullReferenceException($"Table entity type not found for type {entity.FullName}");
+                throw new NullReferenceException($"Table name not found for type '{entity.FullName}'");
 
             yield return tableName;
         }
