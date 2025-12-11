@@ -24,9 +24,15 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
             return false;
         }
 
+        if (HasNotValidCacheControl(context.Request.Headers.CacheControl))
+        {
+            logger.LogNotValidCacheControlDirectiveDetected(context.TraceIdentifier, context.Request.Path);
+            return false;
+        }
+
         if (HasNotValidCacheControl(context.Response.Headers.CacheControl))
         {
-            logger.LogImmutableCacheDetected(context.Request.Path);
+            logger.LogNotValidCacheControlDirectiveDetected(context.TraceIdentifier, context.Request.Path);
             return false;
         }
 
