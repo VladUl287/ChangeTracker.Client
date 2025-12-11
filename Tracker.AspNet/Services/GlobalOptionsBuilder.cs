@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
@@ -17,15 +18,14 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
 
     public ImmutableGlobalOptions Build(GlobalOptions options)
     {
-        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine() ?? _defaultCacheControl;
         return new ImmutableGlobalOptions
         {
             Source = options.Source,
             Suffix = options.Suffix,
             Filter = options.Filter,
-            CacheControl = cacheControl,
             Tables = [.. options.Tables],
             SourceOperations = options.SourceOperations,
+            CacheControl = ResolveCacheControl(options),
             SourceOperationsFactory = options.SourceOperationsFactory,
         };
     }
@@ -38,7 +38,6 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
         var sourceIdGenerator = scope.ServiceProvider.GetRequiredService<ISourceIdGenerator>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<GlobalOptionsBuilder>>();
 
-        var cacheControl = options.CacheControl ?? options.CacheControlBuilder?.Combine() ?? _defaultCacheControl;
         var tables = GetAndCombineTablesNames(options, dbContext, logger);
 
         var sourceId = options.Source;
@@ -51,11 +50,15 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
             Source = sourceId,
             Filter = options.Filter,
             Suffix = options.Suffix,
-            CacheControl = cacheControl,
+            CacheControl = ResolveCacheControl(options),
             SourceOperations = options.SourceOperations,
             SourceOperationsFactory = options.SourceOperationsFactory,
         };
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string ResolveCacheControl(GlobalOptions options) => 
+        options.CacheControl ?? options.CacheControlBuilder?.Combine() ?? _defaultCacheControl;
 
     private static ImmutableArray<string> GetAndCombineTablesNames<TContext>(
         GlobalOptions options, TContext dbContext, ILogger<GlobalOptionsBuilder> logger) where TContext : DbContext
