@@ -26,13 +26,13 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
 
         if (HasNotValidCacheControl(context.Request.Headers.CacheControl))
         {
-            logger.LogNotValidCacheControlDirectiveDetected(context.TraceIdentifier, context.Request.Path);
+            logger.LogNotValidCacheControlDirective(context.TraceIdentifier);
             return false;
         }
 
         if (HasNotValidCacheControl(context.Response.Headers.CacheControl))
         {
-            logger.LogNotValidCacheControlDirectiveDetected(context.TraceIdentifier, context.Request.Path);
+            logger.LogNotValidCacheControlDirective(context.TraceIdentifier);
             return false;
         }
 
