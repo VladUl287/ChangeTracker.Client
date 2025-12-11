@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using Tracker.Core.Services;
 
-namespace Tracker.Tests;
+namespace Tracker.Core.Tests;
 
 public class XxHash64HasherTests
 {
