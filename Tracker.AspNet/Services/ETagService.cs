@@ -1,13 +1,13 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Extensions;
+using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 
-public class ETagService(Assembly assembly) : IETagService
+public class ETagService(IAssemblyTimestampProvider assemblyTimestampProvider) : IETagService
 {
-    private readonly string _assembWriteTime = assembly.GetAssemblyWriteTime().Ticks.ToString();
+    private readonly string _assembWriteTime = assemblyTimestampProvider.GetWriteTime().Ticks.ToString();
 
     public bool EqualsTo(string etag, ulong lastTimestamp, string suffix)
     {
@@ -53,7 +53,7 @@ public class ETagService(Assembly assembly) : IETagService
             lastTimestamp.TryFormat(chars[position..], out var written);
             position += written;
 
-            if (chars.Length < position)
+            if (position < chars.Length)
             {
                 chars[position++] = '-';
                 suffix.AsSpan().CopyTo(chars[position..]);
