@@ -72,7 +72,7 @@ public static class SerivceCollectionExtensions
 
         services.AddSingleton<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>, GlobalOptionsBuilder>();
 
-        services.AddSingleton<IAssemblyTimestampProvider, AssemblyTimestampProvider>();
+        services.AddSingleton<IAssemblyTimestampProvider>(new AssemblyTimestampProvider(Assembly.GetExecutingAssembly()));
         services.AddSingleton<IETagService, ETagService>();
 
         services.AddSingleton<IRequestHandler, RequestHandler>();
