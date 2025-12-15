@@ -21,11 +21,13 @@ public sealed class DefaultRequestHandler(
         ArgumentNullException.ThrowIfNull(ctx, nameof(ctx));
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        logger.LogRequestHandleStarted(ctx.TraceIdentifier, ctx.Request.Path);
+        var traceId = new TraceId(ctx);
+
+        logger.LogRequestHandleStarted(traceId, ctx.Request.Path);
         try
         {
             var operationProvider = GetOperationsProvider(ctx, options);
-            logger.LogSourceProviderResolved(ctx.TraceIdentifier, operationProvider.SourceId);
+            logger.LogSourceProviderResolved(traceId, operationProvider.SourceId);
 
             var lastTimestamp = await GetLastTimestampAsync(options, operationProvider, token);
 
@@ -35,19 +37,19 @@ public sealed class DefaultRequestHandler(
             if (ifNoneMatch is not null && eTagService.Compare(ifNoneMatch, lastTimestamp, suffix))
             {
                 ctx.Response.StatusCode = StatusCodes.Status304NotModified;
-                logger.LogNotModified(ctx.TraceIdentifier, ifNoneMatch);
+                logger.LogNotModified(traceId, ifNoneMatch);
                 return true;
             }
 
             var etag = eTagService.Generate(lastTimestamp, suffix);
             ctx.Response.Headers.CacheControl = options.CacheControl;
             ctx.Response.Headers.ETag = etag;
-            logger.LogETagAdded(etag, ctx.TraceIdentifier);
+            logger.LogETagAdded(etag, traceId);
             return false;
         }
         finally
         {
-            logger.LogRequestHandleFinished(ctx.TraceIdentifier);
+            logger.LogRequestHandleFinished(traceId);
         }
     }
 
@@ -73,12 +75,14 @@ public sealed class DefaultRequestHandler(
 
     private ISourceOperations GetOperationsProvider(HttpContext ctx, ImmutableGlobalOptions opt)
     {
+        var traceId = new TraceId(ctx);
+
         if (opt.Source is not null)
         {
             if (operationsResolver.TryResolve(opt.Source, out var provider))
                 return provider;
 
-            logger.LogSourceProviderNotRegistered(opt.Source, ctx.TraceIdentifier);
+            logger.LogSourceProviderNotRegistered(opt.Source, traceId);
         }
 
         return
