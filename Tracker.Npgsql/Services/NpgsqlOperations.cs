@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.ObjectPool;
-using Npgsql;
-using NpgsqlTypes;
+﻿using Npgsql;
 using System.Collections.Immutable;
 using System.Data;
 using Tracker.Core.Services.Contracts;
@@ -13,11 +11,8 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
     private readonly NpgsqlDataSource _dataSource;
     private bool _disposed;
 
-    private static readonly ObjectPool<NpgsqlParameter> _tableParamsPool =
-        ObjectPool.Create(new ParameterObjectPolicy("table_name", NpgsqlDbType.Text));
-
-    private static readonly ObjectPool<NpgsqlParameter> _timestampParamsPool =
-        ObjectPool.Create(new ParameterObjectPolicy("timestamp", NpgsqlDbType.TimestampTz));
+    private const string TABLE_NAME_PARAM = "table_name";
+    private const string TIMESTAMP_PARAM = "timestamp";
 
     public NpgsqlOperations(string sourceId, NpgsqlDataSource dataSource)
     {
@@ -44,23 +39,12 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
         const string EnableTableTracking = "SELECT enable_table_tracking(@table_name);";
-
         using var command = _dataSource.CreateCommand(EnableTableTracking);
+        command.Parameters.AddWithValue(TABLE_NAME_PARAM, key);
 
-        var parameter = _tableParamsPool.Get();
-        parameter.Value = key;
-        command.Parameters.Add(parameter);
-
-        try
-        {
-            using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
-            var enabled = reader.Read() && reader.GetFieldValue<bool>(0);
-            return new ValueTask<bool>(enabled);
-        }
-        finally
-        {
-            _tableParamsPool.Return(parameter);
-        }
+        using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+        var enabled = reader.Read() && reader.GetFieldValue<bool>(0);
+        return new ValueTask<bool>(enabled);
     }
     public ValueTask<bool> DisableTracking(string key, CancellationToken token = default)
     {
@@ -68,22 +52,11 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
 
         const string DisableTableQuery = "SELECT disable_table_tracking(@table_name);";
         using var command = _dataSource.CreateCommand(DisableTableQuery);
+        command.Parameters.AddWithValue(TABLE_NAME_PARAM, key);
 
-        var parameter = _tableParamsPool.Get();
-        parameter.Value = key;
-        command.Parameters.Add(parameter);
-
-        try
-        {
-            using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
-            var disabled = reader.Read() && reader.GetFieldValue<bool>(0);
-            return new ValueTask<bool>(disabled);
-        }
-        finally
-        {
-            _tableParamsPool.Return(parameter);
-        }
-
+        using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+        var disabled = reader.Read() && reader.GetFieldValue<bool>(0);
+        return new ValueTask<bool>(disabled);
     }
 
     public ValueTask<bool> IsTracking(string key, CancellationToken token = default)
@@ -91,52 +64,29 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
         const string IsTrackingQuery = "SELECT is_table_tracked(@table_name);";
-
         using var command = _dataSource.CreateCommand(IsTrackingQuery);
+        command.Parameters.AddWithValue(TABLE_NAME_PARAM, key);
 
-        var parameter = _tableParamsPool.Get();
-        parameter.Value = key;
-        command.Parameters.Add(parameter);
-
-        try
-        {
-            using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
-            var tracking = reader.Read() && reader.GetFieldValue<bool>(0);
-            return new ValueTask<bool>(tracking);
-        }
-        finally
-        {
-            _tableParamsPool.Return(parameter);
-        }
+        using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+        var tracking = reader.Read() && reader.GetFieldValue<bool>(0);
+        return new ValueTask<bool>(tracking);
     }
 
     public ValueTask<DateTimeOffset> GetLastTimestamp(string key, CancellationToken token = default)
     {
         const string GetTimestampQuery = "SELECT get_last_timestamp(@table_name);";
         using var command = _dataSource.CreateCommand(GetTimestampQuery);
+        command.Parameters.AddWithValue(TABLE_NAME_PARAM, key);
 
-        var parameter = _tableParamsPool.Get();
-        parameter.Value = key;
-        command.Parameters.Add(parameter);
-
-        try
+        using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+        if (reader.Read())
         {
-            using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+            var timestamp = reader.GetFieldValue<DateTimeOffset?>(0)
+               ?? throw new NullReferenceException($"Not able to resolve timestamp for table '{key}'");
 
-            if (reader.Read())
-            {
-                var timestamp = reader.GetFieldValue<DateTimeOffset?>(0)
-                   ?? throw new NullReferenceException($"Not able to resolve timestamp for table '{key}'");
-
-                return new ValueTask<DateTimeOffset>(timestamp);
-            }
-
-            throw new InvalidOperationException($"Not able to resolve timestamp for table '{key}'");
+            return new ValueTask<DateTimeOffset>(timestamp);
         }
-        finally
-        {
-            _tableParamsPool.Return(parameter);
-        }
+        throw new InvalidOperationException($"Not able to resolve timestamp for table '{key}'");
     }
 
     public async ValueTask GetLastTimestamps(ImmutableArray<string> keys, DateTimeOffset[] timestamps, CancellationToken token = default)
@@ -167,26 +117,12 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
     {
         const string SetTimestampQuery = $"SELECT set_last_timestamp(@table_name, @timestamp);";
         using var command = _dataSource.CreateCommand(SetTimestampQuery);
+        command.Parameters.AddWithValue(TABLE_NAME_PARAM, key);
+        command.Parameters.AddWithValue(TIMESTAMP_PARAM, value);
 
-        var tableParameter = _tableParamsPool.Get();
-        tableParameter.Value = key;
-        command.Parameters.Add(tableParameter);
-
-        var timestampParameter = _timestampParamsPool.Get();
-        timestampParameter.Value = value;
-        command.Parameters.Add(timestampParameter);
-
-        try
-        {
-            using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
-
-            var setted = reader.Read() && reader.GetFieldValue<bool>(0);
-            return new ValueTask<bool>(setted);
-        }
-        finally
-        {
-            _tableParamsPool.Return(tableParameter);
-        }
+        using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+        var setted = reader.Read() && reader.GetFieldValue<bool>(0);
+        return new ValueTask<bool>(setted);
     }
 
     public void Dispose()
@@ -209,20 +145,5 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
     ~NpgsqlOperations()
     {
         Dispose(disposing: false);
-    }
-
-    private sealed class ParameterObjectPolicy(string parameterName, NpgsqlDbType dbType) : IPooledObjectPolicy<NpgsqlParameter>
-    {
-        public NpgsqlParameter Create() => new(parameterName, dbType);
-
-        public bool Return(NpgsqlParameter obj)
-        {
-            if (obj is null) return false;
-
-            obj.Value = DBNull.Value;
-            obj.Collection = null;
-
-            return true;
-        }
     }
 }
