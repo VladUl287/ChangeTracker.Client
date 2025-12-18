@@ -1,14 +1,10 @@
 ﻿using BenchmarkDotNet.Running;
 using Tracker.Benchmarks;
 
-BenchmarkRunner.Run<NpgsqlOperationBenchmark>();
-return;
+//BenchmarkRunner.Run<NpgsqlOperationBenchmark>();
+//return;
 
-//var bench = new TrackerEndpointFilterBenchmark();
-//bench.Setup();
-//await bench.Middleware_PostMethod();
-
-//BenchmarkRunner.Run<TrackerEndpointFilterBenchmark>();
+//BenchmarkRunner.Run<TrackerMiddlewareFlterBenchmark>();
 //return;
 
 //BenchmarkRunner.Run<HashersBenchamrk>();
@@ -17,4 +13,4 @@ return;
 //BenchmarkRunner.Run<ReferenceEqualVsManuallStringCompare>();
 //return;
 
-//BenchmarkRunner.Run<ETagComparerBenchmark>();
+BenchmarkRunner.Run<ETagComparerBenchmark>();

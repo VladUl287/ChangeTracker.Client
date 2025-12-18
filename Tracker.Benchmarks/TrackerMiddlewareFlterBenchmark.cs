@@ -11,7 +11,7 @@ using Tracker.Core.Services.Contracts;
 namespace Tracker.Benchmarks;
 
 [MemoryDiagnoser]
-public class TrackerEndpointFilterBenchmark
+public class TrackerMiddlewareFlterBenchmark
 {
     private static readonly ImmutableGlobalOptions emptyGlobalOptions = new()
     {
@@ -85,7 +85,7 @@ public class TrackerEndpointFilterBenchmark
 
     private sealed class BenchmarkOperationsProvider : ISourceOperations
     {
-        public string SourceId => throw new NotImplementedException();
+        public string SourceId => "1";
 
         public ValueTask<bool> DisableTracking(string key, CancellationToken token = default)
         {
@@ -99,17 +99,18 @@ public class TrackerEndpointFilterBenchmark
 
         public ValueTask<long> GetLastVersion(string key, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            return new ValueTask<long>(638081280000000000);
         }
 
         public ValueTask<long> GetLastVersion(CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            return new ValueTask<long>(638081280000000000);
         }
 
         public ValueTask GetLastVersions(ImmutableArray<string> keys, long[] timestamps, CancellationToken token = default)
         {
-            throw new NotImplementedException();
+            timestamps[0] = 638081280000000000;
+            return ValueTask.CompletedTask;
         }
 
         public ValueTask<bool> IsTracking(string key, CancellationToken token = default)

@@ -64,36 +64,6 @@ public unsafe class ETagComparerBenchmark
         return null;
     }
 
-    [Benchmark]
-    public string? Compare_Equal_PartialGenerate_BuildETagV2()
-    {
-        var incominigEtag = IncomingETag.AsSpan();
-
-        Span<char> ltValue = stackalloc char[18];
-        LastTimestamp.TryFormat(ltValue, out var ltWritten);
-
-        var fullLength = AssemblyBuildTimeString.Length + 2 + ltWritten + Suffix.Length;
-        if (fullLength != incominigEtag.Length)
-            return BuildETag(fullLength, AssemblyBuildTimeString, ltValue, Suffix);
-
-        var rightEdge = AssemblyBuildTimeString.Length;
-        var inAssemblyBuildTime = incominigEtag[..rightEdge];
-        if (!inAssemblyBuildTime.Equals(AssemblyBuildTimeString.AsSpan(), StringComparison.Ordinal))
-            return BuildETag(fullLength, AssemblyBuildTimeString, ltValue, Suffix);
-
-        var inTicks = incominigEtag.Slice(++rightEdge, ltWritten);
-        if (!inTicks.Equals(ltValue, StringComparison.Ordinal))
-            return BuildETag(fullLength, AssemblyBuildTimeString, ltValue, Suffix);
-
-        rightEdge += inTicks.Length + 1;
-        var inSuffix = incominigEtag[rightEdge..];
-        if (!inSuffix.Equals(Suffix, StringComparison.Ordinal))
-            return BuildETag(fullLength, AssemblyBuildTimeString, ltValue, Suffix);
-
-        return null;
-    }
-
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string BuildETag(int fullLength, (string AsBuldTime, long LastTimestamp, string Suffix) state) =>
         string.Create(fullLength, state, (chars, state) =>
@@ -108,27 +78,6 @@ public unsafe class ETagComparerBenchmark
 
             state.Suffix.AsSpan().CopyTo(chars[position..]);
         });
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public string BuildETag(int fullLength, ReadOnlySpan<char> asBuildTime, ReadOnlySpan<char> timestamp, ReadOnlySpan<char> suffix)
-    {
-        Span<char> chars = stackalloc char[fullLength];
-
-        var position = asBuildTime.Length;
-        asBuildTime.CopyTo(chars);
-        chars[position++] = '-';
-
-        timestamp.CopyTo(chars[position..]);
-
-        if (suffix.Length > 0)
-        {
-            position += timestamp.Length;
-            chars[position++] = '-';
-            suffix.CopyTo(chars[position..]);
-        }
-
-        return new string(chars);
-    }
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
