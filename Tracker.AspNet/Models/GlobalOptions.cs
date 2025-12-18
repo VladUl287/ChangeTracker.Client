@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Tracker.AspNet.Utils;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Immutable;
-using Tracker.AspNet.Utils;
 using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Models;
@@ -36,7 +36,7 @@ public sealed record ImmutableGlobalOptions
 
     public ImmutableArray<string> Tables { get; init; } = [];
 
-    public string? CacheControl { get; init; }
+    public string CacheControl { get; init; } = string.Empty;
 
     public Func<HttpContext, string> Suffix { get; init; } = (_) => string.Empty;
 }
