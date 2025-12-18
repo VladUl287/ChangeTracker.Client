@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Reflection.Emit;
-using Tracker.Core.Extensions;
+using Tracker.Core.Services;
 
 namespace Tracker.Core.Tests;
 
@@ -11,9 +11,10 @@ public class AssemblyExtensionsTests
     {
         // Arrange
         var assembly = Assembly.GetExecutingAssembly();
+        var assemblyProvider = new AssemblyTimestampProvider(assembly);
 
         // Act
-        var writeTime = assembly.GetAssemblyWriteTime();
+        var writeTime = assemblyProvider.GetWriteTime();
         var lastWriteTimeUtc = File.GetLastWriteTimeUtc(assembly.Location);
 
         // Assert
@@ -25,9 +26,10 @@ public class AssemblyExtensionsTests
     {
         // Arrange
         var assembly = Assembly.GetExecutingAssembly();
+        var assemblyProvider = new AssemblyTimestampProvider(assembly);
 
         // Act
-        var writeTime = assembly.GetAssemblyWriteTime();
+        var writeTime = assemblyProvider.GetWriteTime();
         var lastWriteTimeUtc = File.GetLastWriteTimeUtc(assembly.Location);
 
         // Assert
@@ -39,12 +41,13 @@ public class AssemblyExtensionsTests
     {
         // Arrange
         var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("NullLocationAssembly"), AssemblyBuilderAccess.RunAndCollect);
+        var assemblyProvider = new AssemblyTimestampProvider(assembly);
 
         // Act
-        var getWriteTime = () => { assembly.GetAssemblyWriteTime(); };
+        var getWriteTime = () => { assemblyProvider.GetWriteTime(); };
 
         // Assert
-        Assert.Throws<ArgumentException>(getWriteTime);
+        Assert.Throws<FileNotFoundException>(getWriteTime);
     }
 
     [Fact]
@@ -52,11 +55,12 @@ public class AssemblyExtensionsTests
     {
         // Arrange
         var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("NullLocationAssembly"), AssemblyBuilderAccess.RunAndCollect);
+        var assemblyProvider = new AssemblyTimestampProvider(assembly);
 
         // Act
-        var getWriteTime = () => { assembly.GetAssemblyWriteTime(); };
+        var getWriteTime = () => { assemblyProvider.GetWriteTime(); };
 
         // Assert
-        Assert.Throws<ArgumentException>(getWriteTime);
+        Assert.Throws<FileNotFoundException>(getWriteTime);
     }
 }

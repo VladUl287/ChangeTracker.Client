@@ -1,10 +1,17 @@
 ﻿using System.Reflection;
-using Tracker.Core.Extensions;
 using Tracker.Core.Services.Contracts;
 
 namespace Tracker.Core.Services;
 
-public class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTimestampProvider
+public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTimestampProvider
 {
-    public DateTimeOffset GetWriteTime() => assembly.GetAssemblyWriteTime();
+    public DateTimeOffset GetWriteTime()
+    {
+        ArgumentNullException.ThrowIfNull(assembly, nameof(assembly));
+
+        if (!File.Exists(assembly.Location))
+            throw new FileNotFoundException($"Assembly file not found at '{assembly.Location}'");
+
+        return File.GetLastWriteTimeUtc(assembly.Location);
+    }
 }
