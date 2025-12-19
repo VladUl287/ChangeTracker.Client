@@ -112,17 +112,18 @@ public sealed class NpgsqlOperations : ISourceOperations, IDisposable
 
     public async ValueTask<long> GetLastVersion(CancellationToken token = default)
     {
-        const string GetTimestampQuery = "SELECT pg_last_committed_xact();";
+        const string GetTimestampQuery = "SELECT (pg_last_committed_xact()).timestamp;";
         using var command = _dataSource.CreateCommand(GetTimestampQuery);
 
         using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow, token);
         if (await reader.ReadAsync(token))
         {
-            var result = await reader.GetFieldValueAsync<object[]?>(0);
-            if (result is { Length: > 0 })
-                return ((DateTime)result[1]).Ticks;
+            var timestamp = await reader.GetFieldValueAsync<DateTimeOffset?>(0, token)
+               ?? throw new NullReferenceException("Not able to resolve pg_last_committed_xact timestamp");
+
+            return timestamp.Ticks;
         }
-        throw new InvalidOperationException("Not able to resolve pg_last_committed_xact");
+        throw new InvalidOperationException("Not able to resolve pg_last_committed_xact timestamp");
     }
 
     public async ValueTask<bool> SetLastVersion(string key, long value, CancellationToken token = default)
