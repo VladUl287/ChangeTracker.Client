@@ -1,7 +1,7 @@
 ﻿namespace Tracker.Core.Services.Contracts;
 
 /// <summary>
-/// Provides a mechanism to retrieve the timestamp of an assembly.
+/// Interface to retrieve the timestamp of an assembly.
 /// </summary>
 public interface IAssemblyTimestampProvider
 {
