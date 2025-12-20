@@ -2,7 +2,7 @@
 
 namespace Tracker.SqlServer.Tests.Utils;
 
-internal static class SqlServerHelpers
+internal static class SqlHelpers
 {
     internal static async Task DisableChangeTrackingForAllTables(string connectionString)
     {

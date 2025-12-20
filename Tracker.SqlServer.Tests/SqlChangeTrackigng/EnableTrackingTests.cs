@@ -20,8 +20,8 @@ public class EnableTrackingTests : IAsyncLifetime
 
     public EnableTrackingTests()
     {
-        connectionString = TestConfiguration.GetConnectionString();
-        _lowPrivilageConnectionString = TestConfiguration.GetLowPrivilageConnectionString();
+        connectionString = TestConfiguration.GetSqlConnectionString();
+        _lowPrivilageConnectionString = TestConfiguration.GetSqlLowPrivilageConnectionString();
         _dataSource = SqlClientFactory.Instance.CreateDataSource(connectionString);
         _lowPrivilageDataSource = SqlClientFactory.Instance.CreateDataSource(_lowPrivilageConnectionString);
         _operations = new SqlServerChangeTrackingOperations("test-source", _dataSource);
@@ -30,16 +30,16 @@ public class EnableTrackingTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await SqlServerHelpers.EnableDatabaseChangeTracking(connectionString);
-        await SqlServerHelpers.CreateTestTable(connectionString, _testTableName);
-        await SqlServerHelpers.CreateTestTable(connectionString, _testTableName2);
+        await SqlHelpers.EnableDatabaseChangeTracking(connectionString);
+        await SqlHelpers.CreateTestTable(connectionString, _testTableName);
+        await SqlHelpers.CreateTestTable(connectionString, _testTableName2);
     }
 
     public async Task DisposeAsync()
     {
-        await SqlServerHelpers.DropTable(connectionString, _testTableName);
-        await SqlServerHelpers.DropTable(connectionString, _testTableName2);
-        await SqlServerHelpers.DisableChangeTrackingForAllTables(connectionString);
+        await SqlHelpers.DropTable(connectionString, _testTableName);
+        await SqlHelpers.DropTable(connectionString, _testTableName2);
+        await SqlHelpers.DisableChangeTrackingForAllTables(connectionString);
 
         await _dataSource.DisposeAsync();
         _operations.Dispose();
@@ -114,7 +114,7 @@ public class EnableTrackingTests : IAsyncLifetime
     public async Task EnableTracking_WhenDatabaseChangeTrackingDisabled_ThrowsException()
     {
         // Arrange
-        await SqlServerHelpers.DisableDatabaseChangeTracking(connectionString);
+        await SqlHelpers.DisableDatabaseChangeTracking(connectionString);
 
         try
         {
@@ -124,7 +124,7 @@ public class EnableTrackingTests : IAsyncLifetime
         }
         finally
         {
-            await SqlServerHelpers.EnableDatabaseChangeTracking(connectionString);
+            await SqlHelpers.EnableDatabaseChangeTracking(connectionString);
         }
     }
 
@@ -165,7 +165,7 @@ public class EnableTrackingTests : IAsyncLifetime
         // Arrange
         var tableNoPk = $"TableNoPk_{Guid.NewGuid():N}";
 
-        await SqlServerHelpers.CreateTestTableWithNoKey(connectionString, tableNoPk);
+        await SqlHelpers.CreateTestTableWithNoKey(connectionString, tableNoPk);
 
         try
         {
@@ -175,7 +175,7 @@ public class EnableTrackingTests : IAsyncLifetime
         }
         finally
         {
-            await SqlServerHelpers.DropTable(connectionString, tableNoPk);
+            await SqlHelpers.DropTable(connectionString, tableNoPk);
         }
     }
 
@@ -186,7 +186,7 @@ public class EnableTrackingTests : IAsyncLifetime
         try { await _operations.DisableTracking(_testTableName); }
         catch { }
 
-        await SqlServerHelpers.InsertToTestTable(connectionString, _testTableName, 1);
+        await SqlHelpers.InsertToTestTable(connectionString, _testTableName, 1);
 
         // Act
         var result = await _operations.EnableTracking(_testTableName);

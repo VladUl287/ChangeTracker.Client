@@ -20,8 +20,8 @@ public class GetLastVersionTests : IAsyncLifetime
 
     public GetLastVersionTests()
     {
-        _connectionString = TestConfiguration.GetConnectionString();
-        _lowPrivilageConnectionString = TestConfiguration.GetLowPrivilageConnectionString();
+        _connectionString = TestConfiguration.GetSqlConnectionString();
+        _lowPrivilageConnectionString = TestConfiguration.GetSqlLowPrivilageConnectionString();
         _dataSource = SqlClientFactory.Instance.CreateDataSource(_connectionString);
         _lowPrivilageDataSource = SqlClientFactory.Instance.CreateDataSource(_lowPrivilageConnectionString);
         _operations = new SqlServerChangeTrackingOperations("test-source", _dataSource);
@@ -30,13 +30,13 @@ public class GetLastVersionTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        await SqlServerHelpers.EnableDatabaseChangeTracking(_connectionString);
-        await SqlServerHelpers.CreateTestTable(_connectionString, _testTableName);
+        await SqlHelpers.EnableDatabaseChangeTracking(_connectionString);
+        await SqlHelpers.CreateTestTable(_connectionString, _testTableName);
     }
 
     public async Task DisposeAsync()
     {
-        await SqlServerHelpers.DropTable(_connectionString, _testTableName);
+        await SqlHelpers.DropTable(_connectionString, _testTableName);
 
         await _dataSource.DisposeAsync();
         _operations.Dispose();
@@ -48,7 +48,7 @@ public class GetLastVersionTests : IAsyncLifetime
         // Arrange
         await _operations.EnableTracking(_testTableName);
 
-        await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
+        await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
 
         var expectedVersionQuery = "SELECT CHANGE_TRACKING_CURRENT_VERSION()";
         using var connection = new SqlConnection(_connectionString);
@@ -124,8 +124,8 @@ public class GetLastVersionTests : IAsyncLifetime
         // Arrange
         await _operations.EnableTracking(_testTableName);
 
-        await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
-        await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName, 2);
+        await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
+        await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 2);
 
         // Get final version
         var expectedVersionQuery = "SELECT CHANGE_TRACKING_CURRENT_VERSION()";
@@ -177,8 +177,8 @@ public class GetLastVersionTests : IAsyncLifetime
     public async Task GetLastVersion_WithoutKey_DisableDbTracking_ThrowsException()
     {
         // Arrange
-        await SqlServerHelpers.DisableChangeTrackingForAllTables(_connectionString);
-        await SqlServerHelpers.DisableDatabaseChangeTracking(_connectionString);
+        await SqlHelpers.DisableChangeTrackingForAllTables(_connectionString);
+        await SqlHelpers.DisableDatabaseChangeTracking(_connectionString);
 
         // Act & Assert
         await Assert.ThrowsAsync<SqlNullValueException>(async () =>
@@ -204,7 +204,7 @@ public class GetLastVersionTests : IAsyncLifetime
         // Arrange
         await _operations.EnableTracking(_testTableName);
 
-        await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
+        await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
 
         // Act & Assert
         await Assert.ThrowsAsync<SqlException>(async () =>
@@ -221,7 +221,7 @@ public class GetLastVersionTests : IAsyncLifetime
         await connection.OpenAsync();
 
         for (int i = 0; i < 1000; i++)
-            await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName, i);
+            await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, i);
 
         // Get expected version
         var expectedVersionQuery = "SELECT CHANGE_TRACKING_CURRENT_VERSION()";

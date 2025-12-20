@@ -17,23 +17,23 @@ public class CommonChangeTrackingTests : IAsyncLifetime
 
     public CommonChangeTrackingTests()
     {
-        _connectionString = TestConfiguration.GetConnectionString();
+        _connectionString = TestConfiguration.GetSqlConnectionString();
         _dataSource = SqlClientFactory.Instance.CreateDataSource(_connectionString);
         _operations = new SqlServerChangeTrackingOperations("test-source", _dataSource);
     }
 
     public async Task InitializeAsync()
     {
-        await SqlServerHelpers.EnableDatabaseChangeTracking(_connectionString);
-        await SqlServerHelpers.CreateTestTable(_connectionString, _testTableName);
-        await SqlServerHelpers.CreateTestTable(_connectionString, _testTableName2);
+        await SqlHelpers.EnableDatabaseChangeTracking(_connectionString);
+        await SqlHelpers.CreateTestTable(_connectionString, _testTableName);
+        await SqlHelpers.CreateTestTable(_connectionString, _testTableName2);
     }
 
     public async Task DisposeAsync()
     {
-        await SqlServerHelpers.DropTable(_connectionString, _testTableName);
-        await SqlServerHelpers.DropTable(_connectionString, _testTableName2);
-        await SqlServerHelpers.DisableChangeTrackingForAllTables(_connectionString);
+        await SqlHelpers.DropTable(_connectionString, _testTableName);
+        await SqlHelpers.DropTable(_connectionString, _testTableName2);
+        await SqlHelpers.DisableChangeTrackingForAllTables(_connectionString);
 
         await _dataSource.DisposeAsync();
         _operations.Dispose();
@@ -166,8 +166,8 @@ public class CommonChangeTrackingTests : IAsyncLifetime
             Assert.True(isTracking1);
             Assert.True(isTracking2);
 
-            await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
-            await SqlServerHelpers.InsertToTestTable(_connectionString, _testTableName2, 1);
+            await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 1);
+            await SqlHelpers.InsertToTestTable(_connectionString, _testTableName2, 1);
 
             // Both should be able to get timestamps
             var timestamp1 = await operations1.GetLastVersion(_testTableName, CancellationToken.None);
