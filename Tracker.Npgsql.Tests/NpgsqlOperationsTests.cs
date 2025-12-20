@@ -152,6 +152,35 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task DisableTracking_ValidTable_DisabledTracking_ReturnsFalse()
+    {
+        // Act
+        var result = await _operations.DisableTracking(_testTableName);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task DisableTracking_NotExistingTable_ThrowsException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await _operations.DisableTracking(_testTableName + Guid.NewGuid().ToString("N")));
+    }
+
+    [Fact]
+    public async Task DisableTracking_NotExistingDatabase_ThrowsException()
+    {
+        // Arrange
+        using var operations = new NpgsqlOperations("non-existing-db-source", TestConfiguration.GetSqlNonExistingDatabaseConnectionString());
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PostgresException>(async () =>
+            await operations.DisableTracking(_testTableName));
+    }
+
+    [Fact]
     public async Task IsTracking_ValidTable_ReturnsBoolean()
     {
         // Act
