@@ -37,10 +37,15 @@ public sealed class SqlServerIndexUsageOperations : ISourceOperations, IDisposab
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
         const string GetLastTimestampQuery = $"""
+            DECLARE @table_name_var NVARCHAR(128) = @table_name;
+
+            IF OBJECT_ID(@table_name_var) IS NULL
+                THROW 51000, 'Table does not exist', 1;
+
             SELECT s.last_user_update
             FROM sys.dm_db_index_usage_stats s
             INNER JOIN sys.tables t ON s.object_id = t.object_id
-            WHERE database_id = DB_ID() AND t.name = @table_name;
+            WHERE database_id = DB_ID() AND t.name = @table_name_var;
             """;
 
         using var command = _dataSource.CreateCommand(GetLastTimestampQuery);
@@ -56,7 +61,7 @@ public sealed class SqlServerIndexUsageOperations : ISourceOperations, IDisposab
             var timestamp = await reader.GetFieldValueAsync<DateTime?>(0) ?? default;
             return timestamp.Ticks;
         }
-        throw new InvalidOperationException($"Table '{key}' not found or has no index usage statistics.");
+        return default;
     }
 
     public async ValueTask GetLastVersions(ImmutableArray<string> keys, long[] versions, CancellationToken token = default)
@@ -81,8 +86,10 @@ public sealed class SqlServerIndexUsageOperations : ISourceOperations, IDisposab
         using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow, token);
         if (await reader.ReadAsync(token))
         {
-            var versioin = await reader.GetFieldValueAsync<long?>(0) ?? default;
-            return versioin;
+            if (await reader.IsDBNullAsync(0, token))
+                return default;
+
+            return reader.GetDateTime(0).Ticks;
         }
 
         throw new InvalidOperationException("Unable to retrieve timestamp for database.");
