@@ -2,12 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
-
-[assembly: InternalsVisibleTo("Tracker.AspNet.Tests")]
 
 namespace Tracker.AspNet.Attributes;
 
