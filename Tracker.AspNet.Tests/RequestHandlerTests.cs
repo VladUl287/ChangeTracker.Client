@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Collections.Immutable;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services;
 using Tracker.AspNet.Services.Contracts;
@@ -61,8 +60,9 @@ public class RequestHandlerTests
     {
         // Arrange
         var context = new DefaultHttpContext();
-        context.Request.Headers.IfNoneMatch = "\"test-etag\"";
-        context.TraceIdentifier = "test-trace";
+        var etag = "test-etag";
+
+        context.Request.Headers.IfNoneMatch = etag;
 
         var options = new ImmutableGlobalOptions
         {
@@ -73,7 +73,6 @@ public class RequestHandlerTests
         var mockSourceOperations = new Mock<ISourceOperations>();
         mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
-        mockSourceOperations.Setup(x => x.SourceId).Returns("test-source");
 
         //_mockOperationsResolver.Setup(x => x.TryResolve(
         //        It.IsAny<string>(),
@@ -87,10 +86,8 @@ public class RequestHandlerTests
         _mockOperationsResolver.Setup(x => x.First)
             .Returns(mockSourceOperations.Object);
 
-        _mockETagService.Setup(x => x.Compare("\"test-etag\"", It.IsAny<ulong>(), It.IsAny<string>()))
+        _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
             .Returns(true);
-        _mockETagService.Setup(x => x.Generate(It.IsAny<ulong>(), It.IsAny<string>()))
-            .Returns("\"new-etag\"");
 
         // Act
         var result = await _handler.IsNotModified(context, options, CancellationToken.None);
@@ -105,34 +102,36 @@ public class RequestHandlerTests
     {
         // Arrange
         var context = new DefaultHttpContext();
-        context.Request.Headers.IfNoneMatch = "\"old-etag\"";
-        context.TraceIdentifier = "test-trace";
+        var etag = "test-etag";
+        var newEtag = "new-etag";
+
+        context.Request.Headers.IfNoneMatch = etag;
 
         var options = new ImmutableGlobalOptions
         {
             Tables = [],
-            CacheControl = "max-age=3600"
+            CacheControl = "no-cache"
         };
 
         var mockSourceOperations = new Mock<ISourceOperations>();
         mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
-        mockSourceOperations.Setup(x => x.SourceId).Returns("test-source");
 
         _mockOperationsResolver.Setup(x => x.First)
             .Returns(mockSourceOperations.Object);
 
-        _mockETagService.Setup(x => x.Compare("\"old-etag\"", It.IsAny<ulong>(), It.IsAny<string>()))
+        _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
             .Returns(false);
+
         _mockETagService.Setup(x => x.Generate(It.IsAny<ulong>(), It.IsAny<string>()))
-            .Returns("\"new-etag\"");
+            .Returns(newEtag);
 
         // Act
         var result = await _handler.IsNotModified(context, options, CancellationToken.None);
 
         // Assert
         Assert.False(result);
-        Assert.Equal("\"new-etag\"", context.Response.Headers.ETag);
-        Assert.Equal("max-age=3600", context.Response.Headers.CacheControl);
+        Assert.Equal(newEtag, context.Response.Headers.ETag);
+        Assert.Equal("no-cache", context.Response.Headers.CacheControl);
     }
 }

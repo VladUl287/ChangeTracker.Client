@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System.Buffers;
+﻿using System.Buffers;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Services.Contracts;
 
@@ -85,14 +85,12 @@ public sealed class DefaultRequestHandler(
 
     private ISourceOperations GetOperationsProvider(HttpContext ctx, ImmutableGlobalOptions opt)
     {
-        var traceId = new TraceId(ctx);
-
         if (opt.Source is not null)
         {
             if (operationsResolver.TryResolve(opt.Source, out var provider))
                 return provider;
 
-            logger.LogSourceProviderNotRegistered(opt.Source, traceId);
+            logger.LogSourceProviderNotRegistered(opt.Source, ctx);
         }
 
         return
