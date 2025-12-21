@@ -26,7 +26,6 @@ public sealed class GlobalOptions
 
 public sealed record ImmutableGlobalOptions
 {
-    public string? Source { get; init; }
     public ISourceOperations? SourceOperations { get; init; }
     public Func<HttpContext, ISourceOperations>? SourceOperationsFactory { get; init; }
 

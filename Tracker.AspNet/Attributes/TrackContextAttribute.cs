@@ -37,17 +37,18 @@ public sealed class TrackAttribute<TContext>(
             var serviceProvider = scope.ServiceProvider;
 
             var options = serviceProvider.GetRequiredService<ImmutableGlobalOptions>();
-            var sourceResolver = serviceProvider.GetRequiredService<ISourceOperationsResolver>();
+            var sourceResolver = serviceProvider.GetRequiredService<IProviderResolver>();
             var sourceIdGenerator = serviceProvider.GetRequiredService<ISourceIdGenerator>();
             var logger = serviceProvider.GetRequiredService<ILogger<TrackAttribute<TContext>>>();
 
+            var sourceOperations = sourceResolver.SelectProvider<TContext>(sourceId, options);
+
             cacheControl ??= options.CacheControl;
-            sourceId ??= TryEnsureSourceId(ctx, options, sourceResolver, sourceIdGenerator, logger);
 
             _actionOptions = options with
             {
-                Source = sourceId,
                 CacheControl = cacheControl,
+                SourceOperations = sourceOperations,
                 Tables = GetAndCombineTablesNames(ctx, tables, entities, serviceProvider, logger)
             };
             logger.LogOptionsBuilded(GetActionName(ctx));
@@ -58,21 +59,6 @@ public sealed class TrackAttribute<TContext>(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string GetActionName(ActionExecutingContext ctx) =>
         ctx.ActionDescriptor.DisplayName ?? ctx.ActionDescriptor.Id;
-
-    private static string? TryEnsureSourceId(ActionExecutingContext ctx, ImmutableGlobalOptions options,
-        ISourceOperationsResolver sourceResolver, ISourceIdGenerator sourceIdGenerator,
-        ILogger<TrackAttribute<TContext>> logger)
-    {
-        var sourceId = sourceIdGenerator.GenerateId<TContext>();
-        if (sourceResolver.Registered(sourceId))
-        {
-            logger.LogSourceIdGenerateFromTContext(GetActionName(ctx));
-            return sourceId;
-        }
-
-        logger.LogSourceIdTakedFromOptions(GetActionName(ctx));
-        return options.Source;
-    }
 
     private static ImmutableArray<string> GetAndCombineTablesNames(ActionExecutingContext ctx,
         string[]? tables, Type[]? entities, IServiceProvider serviceProvider, ILogger<TrackAttribute<TContext>> logger)

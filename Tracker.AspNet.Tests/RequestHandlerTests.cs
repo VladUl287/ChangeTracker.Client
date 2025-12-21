@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Moq;
+﻿using Moq;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services;
-using Tracker.AspNet.Services.Contracts;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Tests;
@@ -11,7 +10,6 @@ namespace Tracker.AspNet.Tests;
 public class RequestHandlerTests
 {
     private readonly Mock<IETagProvider> _mockETagService;
-    private readonly Mock<ISourceOperationsResolver> _mockOperationsResolver;
     private readonly Mock<ITrackerHasher> _mockTimestampsHasher;
     private readonly Mock<ILogger<DefaultRequestHandler>> _mockLogger;
     private readonly DefaultRequestHandler _handler;
@@ -19,13 +17,11 @@ public class RequestHandlerTests
     public RequestHandlerTests()
     {
         _mockETagService = new Mock<IETagProvider>();
-        _mockOperationsResolver = new Mock<ISourceOperationsResolver>();
         _mockTimestampsHasher = new Mock<ITrackerHasher>();
         _mockLogger = new Mock<ILogger<DefaultRequestHandler>>();
 
         _handler = new DefaultRequestHandler(
             _mockETagService.Object,
-            _mockOperationsResolver.Object,
             _mockTimestampsHasher.Object,
             _mockLogger.Object
         );
@@ -83,9 +79,6 @@ public class RequestHandlerTests
         //        return true;
         //    }));
 
-        _mockOperationsResolver.Setup(x => x.First)
-            .Returns(mockSourceOperations.Object);
-
         _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
             .Returns(true);
 
@@ -116,9 +109,6 @@ public class RequestHandlerTests
         var mockSourceOperations = new Mock<ISourceOperations>();
         mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
-
-        _mockOperationsResolver.Setup(x => x.First)
-            .Returns(mockSourceOperations.Object);
 
         _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
             .Returns(false);

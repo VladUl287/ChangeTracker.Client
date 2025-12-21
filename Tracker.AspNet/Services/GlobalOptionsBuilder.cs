@@ -5,10 +5,10 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
-using Tracker.AspNet.Services.Contracts;
 using Tracker.AspNet.Utils;
 using Tracker.Core.Extensions;
 using Tracker.Core.Services.Contracts;
+using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 
@@ -18,17 +18,21 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
 
     public ImmutableGlobalOptions Build(GlobalOptions options)
     {
+        using var scope = scopeFactory.CreateScope();
+
+        var providerSelector = scope.ServiceProvider.GetRequiredService<IProviderResolver>();
+
         return new ImmutableGlobalOptions
         {
-            Source = options.Source,
+            SourceOperations = providerSelector.SelectProvider(options),
+            SourceOperationsFactory = options.SourceOperationsFactory,
+
             Suffix = options.Suffix,
             Filter = options.Filter,
             InvalidRequestDirectives = [.. options.InvalidRequestDirectives],
             InvalidResponseDirectives = [.. options.InvalidResponseDirectives],
             Tables = [.. options.Tables],
-            SourceOperations = options.SourceOperations,
             CacheControl = ResolveCacheControl(options),
-            SourceOperationsFactory = options.SourceOperationsFactory,
         };
     }
 
@@ -38,25 +42,22 @@ public sealed class GlobalOptionsBuilder(IServiceScopeFactory scopeFactory) : IO
 
         var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
         var sourceIdGenerator = scope.ServiceProvider.GetRequiredService<ISourceIdGenerator>();
+        var providerSelector = scope.ServiceProvider.GetRequiredService<IProviderResolver>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<GlobalOptionsBuilder>>();
 
         var tables = GetAndCombineTablesNames(options, dbContext, logger);
 
-        var sourceId = options.Source;
-        if (options is { Source: null, SourceOperations: null, SourceOperationsFactory: null })
-            sourceId = sourceIdGenerator.GenerateId<TContext>();
-
         return new ImmutableGlobalOptions
         {
+            SourceOperations = providerSelector.SelectProvider<TContext>(options),
+            SourceOperationsFactory = options.SourceOperationsFactory,
+
             Tables = tables,
-            Source = sourceId,
             Suffix = options.Suffix,
             Filter = options.Filter,
             InvalidRequestDirectives = [.. options.InvalidRequestDirectives],
             InvalidResponseDirectives = [.. options.InvalidResponseDirectives],
             CacheControl = ResolveCacheControl(options),
-            SourceOperations = options.SourceOperations,
-            SourceOperationsFactory = options.SourceOperationsFactory,
         };
     }
 

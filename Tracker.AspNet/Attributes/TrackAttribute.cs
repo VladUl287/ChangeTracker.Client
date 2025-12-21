@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
+using Tracker.AspNet.Services.Contracts;
 
 [assembly: InternalsVisibleTo("Tracker.AspNet.Tests")]
 
@@ -30,13 +31,15 @@ public sealed class TrackAttribute(
                 return _actionOptions;
 
             var serviceProvider = ctx.HttpContext.RequestServices;
+            var providerSelector = serviceProvider.GetRequiredService<IProviderResolver>();
             var options = serviceProvider.GetRequiredService<ImmutableGlobalOptions>();
             var logger = serviceProvider.GetRequiredService<ILogger<TrackAttribute>>();
 
+            var operationsProvider = providerSelector.SelectProvider(sourceId, options);
             _actionOptions = options with
             {
+                SourceOperations = operationsProvider,
                 CacheControl = cacheControl ?? options.CacheControl,
-                Source = sourceId ?? options.Source,
                 Tables = tables?.ToImmutableArray() ?? []
             };
             logger.LogOptionsBuilded(ctx.ActionDescriptor.DisplayName ?? ctx.ActionDescriptor.Id);

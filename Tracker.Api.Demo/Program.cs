@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Tracker.Api.Demo.Database;
 using Tracker.AspNet.Extensions;
+using Tracker.AspNet.Services;
+using Tracker.AspNet.Services.Contracts;
 using Tracker.Npgsql.Extensions;
 using Tracker.SqlServer.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services.AddControllers();
+
+    builder.Services.AddSingleton<IProviderResolver, ProviderResolver>();
 
     builder.Services.AddOpenApi();
 
@@ -15,7 +19,8 @@ var builder = WebApplication.CreateBuilder(args);
         .AddNpgsqlSource<DatabaseContext>()
         .AddSqlServerSource<SqlServerDatabaseContext>()
         .AddNpgsqlSource("source1", "Host=localhost;Port=5432;Database=test123;Username=postgres;Password=postgres")
-        .AddSqlServerSource("source2", "Server=localhost;Database=TrackerTestDb;Trusted_Connection=true;");
+        .AddSqlServerSource("source2", "Server=localhost;Database=TrackerTestDb;Trusted_Connection=true;")
+        ;
 
     builder.Services.AddDbContext<DatabaseContext>(options =>
     {

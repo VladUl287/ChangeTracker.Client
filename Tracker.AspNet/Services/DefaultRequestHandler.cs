@@ -9,8 +9,7 @@ using Tracker.Core.Services.Contracts;
 namespace Tracker.AspNet.Services;
 
 public sealed class DefaultRequestHandler(
-    IETagProvider eTagService, ISourceOperationsResolver operationsResolver, ITrackerHasher timestampsHasher,
-    ILogger<DefaultRequestHandler> logger) : IRequestHandler
+    IETagProvider eTagService, ITrackerHasher timestampsHasher, ILogger<DefaultRequestHandler> logger) : IRequestHandler
 {
     public async ValueTask<bool> IsNotModified(HttpContext ctx, ImmutableGlobalOptions options, CancellationToken token = default)
     {
@@ -22,10 +21,14 @@ public sealed class DefaultRequestHandler(
         logger.LogRequestHandleStarted(traceId, ctx.Request.Path);
         try
         {
-            var operationProvider = GetOperationsProvider(ctx, options);
-            logger.LogSourceProviderResolved(traceId, operationProvider.SourceId);
+            var operationsProvider =
+                options.SourceOperations ??
+                options.SourceOperationsFactory?.Invoke(ctx) ??
+                throw new NullReferenceException("Source operations provider not found");
 
-            var lastTimestamp = await GetLastVersionAsync(options, operationProvider, token);
+            logger.LogSourceProviderResolved(traceId, operationsProvider.SourceId);
+
+            var lastTimestamp = await GetLastVersionAsync(options, operationsProvider, token);
 
             var notModified = NotModified(ctx, options, traceId, lastTimestamp, out var suffix);
             if (notModified)
@@ -81,22 +84,5 @@ public sealed class DefaultRequestHandler(
                 ArrayPool<long>.Shared.Return(timestamps);
                 return hash;
         }
-    }
-
-    private ISourceOperations GetOperationsProvider(HttpContext ctx, ImmutableGlobalOptions opt)
-    {
-        if (opt.Source is not null)
-        {
-            if (operationsResolver.TryResolve(opt.Source, out var provider))
-                return provider;
-
-            logger.LogSourceProviderNotRegistered(opt.Source, ctx);
-        }
-
-        return
-            opt.SourceOperations ??
-            opt.SourceOperationsFactory?.Invoke(ctx) ??
-            operationsResolver.First ??
-            throw new NullReferenceException($"Source operations provider not found. TraceId - '{ctx.TraceIdentifier}'");
     }
 }
