@@ -1,6 +1,9 @@
 ﻿using BenchmarkDotNet.Running;
 using Tracker.Benchmarks;
 
+BenchmarkRunner.Run<CountDigitsBenchmark>();
+return;
+
 BenchmarkRunner.Run<NpgsqlOperationBenchmark>();
 return;
 
