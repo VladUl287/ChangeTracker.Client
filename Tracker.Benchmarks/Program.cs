@@ -1,6 +1,9 @@
 ﻿using BenchmarkDotNet.Running;
 using Tracker.Benchmarks;
 
+BenchmarkRunner.Run<UlongEqualBenchmark>();
+return;
+
 BenchmarkRunner.Run<CountDigitsBenchmark>();
 return;
 
