@@ -37,15 +37,14 @@ public sealed class SqlServerIndexUsageOperations : ISourceOperations, IDisposab
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
         const string GetLastTimestampQuery = $"""
-            DECLARE @table_name_var NVARCHAR(128) = @table_name;
+            DECLARE @table_id INT = OBJECT_ID(@table_name);
 
-            IF OBJECT_ID(@table_name_var) IS NULL
+            IF @table_id IS NULL
                 THROW 51000, 'Table does not exist', 1;
 
             SELECT s.last_user_update
             FROM sys.dm_db_index_usage_stats s
-            INNER JOIN sys.tables t ON s.object_id = t.object_id
-            WHERE database_id = DB_ID() AND t.name = @table_name_var;
+            WHERE s.database_id = DB_ID() AND s.object_id = @table_id AND s.last_user_update IS NOT NULL;
             """;
 
         using var command = _dataSource.CreateCommand(GetLastTimestampQuery);
@@ -56,11 +55,10 @@ public sealed class SqlServerIndexUsageOperations : ISourceOperations, IDisposab
         command.Parameters.Add(parameter);
 
         using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow, token);
+
         if (await reader.ReadAsync(token))
-        {
-            var timestamp = await reader.GetFieldValueAsync<DateTime?>(0) ?? default;
-            return timestamp.Ticks;
-        }
+            return reader.GetDateTime(0).Ticks;
+
         return default;
     }
 
