@@ -46,5 +46,5 @@ public sealed class TrackAttribute(
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ImmutableArray<string> ResolveTables(string[]? tables, ImmutableGlobalOptions options) =>
-        tables?.ToImmutableArray() ?? options.Tables;
+        new HashSet<string>(tables ?? [.. options.Tables]).ToImmutableArray();
 }
