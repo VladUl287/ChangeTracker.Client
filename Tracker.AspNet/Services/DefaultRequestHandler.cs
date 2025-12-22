@@ -24,7 +24,7 @@ public sealed class DefaultRequestHandler(
             var operationsProvider =
                 options.SourceProvider ??
                 options.SourceProviderFactory?.Invoke(ctx) ??
-                throw new NullReferenceException("Source operations provider not found");
+                throw new NullReferenceException($"Source operations provider not found. TraceId = {traceId}");
 
             logger.LogSourceProviderResolved(traceId, operationsProvider.Id);
 
