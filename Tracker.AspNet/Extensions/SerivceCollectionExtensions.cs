@@ -77,8 +77,6 @@ public static class SerivceCollectionExtensions
 
         services.AddSingleton<IRequestHandler, DefaultRequestHandler>();
 
-        services.AddSingleton<ISourceOperationsResolver, SourceOperationsResolver>();
-
         services.AddSingleton<IDirectiveChecker, DefaltDirectiveChecker>();
         services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
 

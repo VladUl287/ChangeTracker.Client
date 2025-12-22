@@ -5,7 +5,7 @@ using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Tests;
 
-public class SourceOperationsValidatorTests
+public class SourceProviderValidatorTests
 {
     public interface ITestSourceOperations : ISourceProvider
     {

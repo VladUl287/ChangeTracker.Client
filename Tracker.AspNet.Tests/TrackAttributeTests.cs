@@ -33,7 +33,6 @@ public class TrackAttributeTests
         _defaultOptions = new ImmutableGlobalOptions
         {
             CacheControl = "max-age=3600",
-            Source = "default-source",
             Tables = ImmutableArray<string>.Empty
         };
 
@@ -171,7 +170,7 @@ public class TrackAttributeTests
 
         // Assert
         Assert.Equal("no-store", result.CacheControl);
-        Assert.Equal("custom-source", result.Source);
+        //Assert.Equal("custom-source", result.Source);
         Assert.Contains("users", result.Tables);
         Assert.Contains("orders", result.Tables);
     }
@@ -206,7 +205,6 @@ public class TrackAttributeTests
             .Returns(new ImmutableGlobalOptions
             {
                 CacheControl = "max-age=7200",
-                Source = "global-source",
                 Tables = []
             });
 
@@ -215,7 +213,7 @@ public class TrackAttributeTests
 
         // Assert
         Assert.Equal("max-age=7200", result.CacheControl); // From global options
-        Assert.Equal("global-source", result.Source); // From global options
+        //Assert.Equal("global-source", result.Source); // From global options
         Assert.Contains("products", result.Tables);
     }
 
@@ -232,7 +230,7 @@ public class TrackAttributeTests
 
         // Assert
         Assert.Equal(_defaultOptions.CacheControl, result.CacheControl);
-        Assert.Equal(_defaultOptions.Source, result.Source);
+        //Assert.Equal(_defaultOptions.Source, result.Source);
         Assert.Equal(_defaultOptions.Tables, result.Tables);
     }
 

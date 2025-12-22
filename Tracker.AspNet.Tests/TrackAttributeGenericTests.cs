@@ -23,7 +23,6 @@ public class TrackAttributeGenericTests
     private readonly Mock<IServiceProvider> _scopedServiceProviderMock;
     private readonly Mock<IRequestFilter> _requestFilterMock;
     private readonly Mock<IRequestHandler> _requestHandlerMock;
-    private readonly Mock<ISourceOperationsResolver> _sourceResolverMock;
     private readonly Mock<IProviderIdGenerator> _sourceIdGeneratorMock;
     private readonly Mock<ILogger<TrackAttribute<TestDbContext>>> _loggerMock;
     private readonly Mock<TestDbContext> _dbContextMock;
@@ -39,7 +38,6 @@ public class TrackAttributeGenericTests
         _scopedServiceProviderMock = new Mock<IServiceProvider>();
         _requestFilterMock = new Mock<IRequestFilter>();
         _requestHandlerMock = new Mock<IRequestHandler>();
-        _sourceResolverMock = new Mock<ISourceOperationsResolver>();
         _sourceIdGeneratorMock = new Mock<IProviderIdGenerator>();
         _loggerMock = new Mock<ILogger<TrackAttribute<TestDbContext>>>();
         _dbContextMock = new Mock<TestDbContext>();
@@ -47,7 +45,6 @@ public class TrackAttributeGenericTests
         _defaultOptions = new ImmutableGlobalOptions
         {
             CacheControl = "max-age=3600",
-            Source = "default-source",
             Tables = ImmutableArray<string>.Empty
         };
 
@@ -149,7 +146,6 @@ public class TrackAttributeGenericTests
 
         // Assert
         Assert.Equal("no-store", result.CacheControl);
-        Assert.Equal("custom-source", result.Source);
         Assert.Contains("users", result.Tables);
         Assert.Contains("orders", result.Tables);
         Assert.Contains("Products", result.Tables);
@@ -159,46 +155,6 @@ public class TrackAttributeGenericTests
         // Verify scope was created
         _serviceScopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
         _serviceScopeMock.Verify(x => x.Dispose(), Times.Once);
-    }
-
-    [Fact]
-    public void GetOptions_SourceIdNotProvided_GeneratesFromTContextWhenRegistered()
-    {
-        // Arrange
-        var attribute = new TrackAttribute<TestDbContext>();
-        var generatedSourceId = "generated-source-123";
-
-        SetupServiceProvider();
-        _sourceIdGeneratorMock.Setup(x => x.GenerateId<TestDbContext>())
-            .Returns(generatedSourceId);
-        _sourceResolverMock.Setup(x => x.Registered(generatedSourceId))
-            .Returns(true);
-
-        // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
-
-        // Assert
-        Assert.Equal(generatedSourceId, result.Source);
-    }
-
-    [Fact]
-    public void GetOptions_SourceIdNotProvided_NotRegistered_FallsBackToOptions()
-    {
-        // Arrange
-        var attribute = new TrackAttribute<TestDbContext>();
-        var generatedSourceId = "generated-source-123";
-
-        SetupServiceProvider();
-        _sourceIdGeneratorMock.Setup(x => x.GenerateId<TestDbContext>())
-            .Returns(generatedSourceId);
-        _sourceResolverMock.Setup(x => x.Registered(generatedSourceId))
-            .Returns(false);
-
-        // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
-
-        // Assert
-        Assert.Equal(_defaultOptions.Source, result.Source);
     }
 
     [Fact]
@@ -236,28 +192,6 @@ public class TrackAttributeGenericTests
         Assert.Contains("Users", result.Tables);
         Assert.Contains("Products", result.Tables);
         Assert.Contains("Categories", result.Tables);
-    }
-
-    [Fact]
-    public void GetOptions_CacheControlNotProvided_UsesFromOptions()
-    {
-        // Arrange
-        var attribute = new TrackAttribute<TestDbContext>();
-
-        SetupServiceProvider();
-        _scopedServiceProviderMock.Setup(x => x.GetService(typeof(ImmutableGlobalOptions)))
-            .Returns(new ImmutableGlobalOptions
-            {
-                CacheControl = "max-age=7200",
-                Source = "default-source",
-                Tables = []
-            });
-
-        // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
-
-        // Assert
-        Assert.Equal("max-age=7200", result.CacheControl);
     }
 
     [Fact]
@@ -416,8 +350,6 @@ public class TrackAttributeGenericTests
     {
         _scopedServiceProviderMock.Setup(x => x.GetService(typeof(ImmutableGlobalOptions)))
             .Returns(_defaultOptions);
-        _scopedServiceProviderMock.Setup(x => x.GetService(typeof(ISourceOperationsResolver)))
-            .Returns(_sourceResolverMock.Object);
         _scopedServiceProviderMock.Setup(x => x.GetService(typeof(IProviderIdGenerator)))
             .Returns(_sourceIdGeneratorMock.Object);
         _scopedServiceProviderMock.Setup(x => x.GetService(typeof(ILogger<TrackAttribute<TestDbContext>>)))
