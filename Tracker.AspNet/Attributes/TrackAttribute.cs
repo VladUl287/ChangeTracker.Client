@@ -35,13 +35,11 @@ public sealed class TrackAttribute(
             var options = serviceProvider.GetRequiredService<ImmutableGlobalOptions>();
             var logger = serviceProvider.GetRequiredService<ILogger<TrackAttribute>>();
 
-            var operationsProvider = providerSelector.SelectProvider(sourceId, options);
-
             _actionOptions = options with
             {
-                SourceProvider = operationsProvider,
                 CacheControl = cacheControl ?? options.CacheControl,
-                Tables = tables?.ToImmutableArray() ?? []
+                Tables = tables?.ToImmutableArray() ?? options.Tables,
+                SourceProvider = providerSelector.SelectProvider(sourceId, options),
             };
 
             logger.LogOptionsBuilded(ctx.ActionDescriptor.DisplayName ?? ctx.ActionDescriptor.Id);
