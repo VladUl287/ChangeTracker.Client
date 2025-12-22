@@ -13,7 +13,7 @@ using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Services.Contracts;
 
 
-namespace Tracker.AspNet.Tests;
+namespace Tracker.AspNet.Tests.AttirubtesTests;
 
 public class TrackAttributeGenericTests
 {
