@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Frozen;
+using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Services.Contracts;
@@ -8,7 +9,9 @@ using Tracker.Core.Services.Contracts;
 namespace Tracker.AspNet.Services;
 
 public sealed class DefaultProviderResolver(
-    IEnumerable<ISourceProvider> providers, IProviderIdGenerator idGenerator, ILogger<DefaultProviderResolver> logger) : IProviderResolver
+    IEnumerable<ISourceProvider> providers,
+    IProviderIdGenerator idGenerator,
+    ILogger<DefaultProviderResolver> logger) : IProviderResolver
 {
     private readonly FrozenDictionary<string, ISourceProvider> _store = providers.ToFrozenDictionary(c => c.Id);
     private readonly ISourceProvider _default = providers.First();
@@ -19,21 +22,20 @@ public sealed class DefaultProviderResolver(
         {
             if (_store.TryGetValue(providerId, out var provider))
             {
-                logger.LogInformation("Provider '{ProviderId}' successfully resolved from explicit provider ID.", providerId);
+                logger.LogProviderResolvedFromExplicitId(providerId);
                 return provider;
             }
 
-            throw new InvalidOperationException($"Fail to resolve provider for excplicit provider ID - '{providerId}'");
+            throw new InvalidOperationException($"Fail to resolve provider for explicit provider ID - '{providerId}'");
         }
 
         if (options is { SourceProvider: null, SourceProviderFactory: null })
         {
-            logger.LogInformation(
-                "No explicit provider ID provided and no source operations configured. Returning default provider '{DefaultProviderId}'.", _default.Id);
+            logger.LogNoProviderIdNoSourceOpsReturningDefault(_default.Id);
             return _default;
         }
 
-        logger.LogInformation("No explicit source ID provided. Returning source operations from options.");
+        logger.LogNoExplicitProviderIdReturningFromOptions();
         return options.SourceProvider;
     }
 
@@ -45,7 +47,7 @@ public sealed class DefaultProviderResolver(
         {
             if (_store.TryGetValue(sourceId, out var provider))
             {
-                logger.LogInformation("Provider '{ProviderId}' successfully resolved from GlobalOptions source.", sourceId);
+                logger.LogProviderResolvedFromGlobalOptions(sourceId);
                 return provider;
             }
 
@@ -56,114 +58,90 @@ public sealed class DefaultProviderResolver(
 
         if (options is { SourceProvider: null, SourceProviderFactory: null })
         {
-            logger.LogInformation(
-                "No source ID in GlobalOptions and no source operations configured. " +
-                "Returning default provider '{DefaultProviderId}'.", _default.Id);
+            logger.LogNoSourceIdNoOpsReturningDefault(_default.Id);
             return _default;
         }
 
-        logger.LogInformation("No provider ID in GlobalOptions. Returning source operations from GlobalOptions.");
+        logger.LogNoProviderIdReturningFromGlobalOptions();
         return options.SourceProvider;
     }
 
     public ISourceProvider? SelectProvider<TContext>(string? sourceId, ImmutableGlobalOptions options) where TContext : DbContext
     {
+        var contextTypeName = typeof(TContext).Name;
+
         if (sourceId is not null)
         {
             if (_store.TryGetValue(sourceId, out var provider))
             {
-                logger.LogInformation(
-                    "Provider '{ProviderId}' successfully resolved from explicit source ID for context '{ContextType}'.",
-                    sourceId, typeof(TContext).Name);
+                logger.LogProviderResolvedFromExplicitIdForContext(sourceId, contextTypeName);
                 return provider;
             }
 
             throw new InvalidOperationException(
-                $"Failed to resolve source provider for context '{typeof(TContext).Name}'. " +
+                $"Failed to resolve source provider for context '{contextTypeName}'. " +
                 $"Provider with ID '{sourceId}' was not found. " +
                 $"Available provider IDs: {string.Join(", ", _store.Keys)}");
         }
 
-        logger.LogInformation(
-            "No explicit source ID provided for context '{ContextType}'. Attempting to generate provider ID based on context type.",
-            typeof(TContext).Name);
+        logger.LogNoExplicitIdAttemptingGeneration(contextTypeName);
 
         sourceId = idGenerator.GenerateId<TContext>();
 
         if (_store.TryGetValue(sourceId, out var contextProvider))
         {
-            logger.LogInformation(
-                "Provider '{ProviderId}' successfully resolved from generated ID for context '{ContextType}'.",
-                sourceId, typeof(TContext).Name);
+            logger.LogProviderResolvedFromGeneratedId(sourceId, contextTypeName);
             return contextProvider;
         }
 
         if (options is { SourceProvider: null, SourceProviderFactory: null })
         {
-            logger.LogInformation(
-                "Generated provider ID '{GeneratedId}' not found for context '{ContextType}' and no source operations configured. Returning default provider '{DefaultProviderId}'.",
-                sourceId, typeof(TContext).Name, _default.Id);
+            logger.LogGeneratedIdNotFoundNoOpsReturningDefault(sourceId, contextTypeName, _default.Id);
             return _default;
         }
 
-        logger.LogInformation(
-            "Generated provider ID '{GeneratedId}' not found for context '{ContextType}'. Returning source operations from options.",
-            sourceId, typeof(TContext).Name);
+        logger.LogGeneratedIdNotFoundReturningFromOptions(sourceId, contextTypeName);
         return options.SourceProvider;
     }
 
     public ISourceProvider? SelectProvider<TContext>(GlobalOptions options) where TContext : DbContext
     {
+        var contextTypeName = typeof(TContext).Name;
         var sourceId = options.Source;
 
         if (sourceId is not null)
         {
             if (_store.TryGetValue(sourceId, out var provider))
             {
-                logger.LogInformation(
-                    "Provider '{ProviderId}' successfully resolved from GlobalOptions source for context '{ContextType}'.",
-                    sourceId, typeof(TContext).Name);
+                logger.LogProviderResolvedFromGlobalOptionsForContext(sourceId, contextTypeName);
                 return provider;
             }
 
             throw new InvalidOperationException(
-                $"Failed to resolve source provider for context '{typeof(TContext).Name}' from GlobalOptions. " +
+                $"Failed to resolve source provider for context '{contextTypeName}' from GlobalOptions. " +
                 $"Provider with ID '{sourceId}' was not found. " +
                 $"Available provider IDs: {string.Join(", ", _store.Keys)}");
         }
 
-        logger.LogInformation(
-            "No source ID in GlobalOptions for context '{ContextType}'. " +
-            "Attempting to generate provider ID based on context type.",
-            typeof(TContext).Name);
+        logger.LogNoSourceIdInGlobalOptionsAttemptingGeneration(contextTypeName);
 
         sourceId = idGenerator.GenerateId<TContext>();
 
-        logger.LogInformation(
-            "Generated provider ID '{GeneratedId}' for context '{ContextType}'.",
-            sourceId, typeof(TContext).Name);
+        logger.LogGeneratedIdForContext(sourceId, contextTypeName);
 
         if (_store.TryGetValue(sourceId, out var contextProvider))
         {
-            logger.LogInformation(
-                "Provider '{ProviderId}' successfully resolved from generated ID for context '{ContextType}'.",
-                sourceId, typeof(TContext).Name);
+            logger.LogProviderResolvedFromGeneratedIdForContext(sourceId, contextTypeName);
             return contextProvider;
         }
 
         if (options is { SourceProvider: null, SourceProviderFactory: null })
         {
-            logger.LogInformation(
-                "Generated provider ID '{GeneratedId}' not found for context '{ContextType}' and no source operations configured in GlobalOptions. " +
-                "Returning default provider '{DefaultProviderId}'.",
-                sourceId, typeof(TContext).Name, _default.Id);
+            logger.LogGeneratedIdNotFoundNoOpsInGlobalOptionsReturningDefault(sourceId, contextTypeName, _default.Id);
             return _default;
         }
 
-        logger.LogInformation(
-            "Generated provider ID '{GeneratedId}' not found for context '{ContextType}'. " +
-            "Returning source operations from GlobalOptions.",
-            sourceId, typeof(TContext).Name);
+        logger.LogGeneratedIdNotFoundReturningFromGlobalOptions(sourceId, contextTypeName);
         return options.SourceProvider;
     }
 }
