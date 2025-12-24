@@ -5,7 +5,7 @@ using Moq;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services;
 
-namespace Tracker.AspNet.Tests;
+namespace Tracker.AspNet.Tests.ServicesTests;
 
 public class DefaultRequestFilterTests
 {

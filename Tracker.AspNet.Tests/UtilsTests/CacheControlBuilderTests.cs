@@ -1,6 +1,6 @@
 ﻿using Tracker.AspNet.Utils;
 
-namespace Tracker.AspNet.Tests;
+namespace Tracker.AspNet.Tests.UtilsTests;
 
 public class CacheControlBuilderTests
 {

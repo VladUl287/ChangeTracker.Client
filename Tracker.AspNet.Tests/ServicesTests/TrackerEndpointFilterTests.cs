@@ -6,7 +6,7 @@ using Tracker.AspNet.Models;
 using Tracker.AspNet.Services;
 using Tracker.AspNet.Services.Contracts;
 
-namespace Tracker.AspNet.Tests;
+namespace Tracker.AspNet.Tests.ServicesTests;
 
 public class TrackerEndpointFilterTests
 {
