@@ -1,7 +1,7 @@
-﻿using System.Data;
-using System.Data.Common;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using System.Collections.Immutable;
+using System.Data;
+using System.Data.Common;
 using Tracker.Core.Services.Contracts;
 
 namespace Tracker.SqlServer.Services;

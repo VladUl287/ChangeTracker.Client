@@ -5,9 +5,9 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
+using Tracker.AspNet.Services.Contracts;
 using Tracker.AspNet.Utils;
 using Tracker.Core.Extensions;
-using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 

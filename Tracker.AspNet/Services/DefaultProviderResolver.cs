@@ -1,9 +1,9 @@
-﻿using Tracker.AspNet.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Tracker.Core.Services.Contracts;
-using Tracker.AspNet.Services.Contracts;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Tracker.AspNet.Models;
+using Tracker.AspNet.Services.Contracts;
+using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Services;
 

@@ -1,10 +1,10 @@
-﻿using Moq;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Tracker.Core.Services.Contracts;
 using Tracker.AspNet.Services.Contracts;
+using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Tests.ServicesTests;
 

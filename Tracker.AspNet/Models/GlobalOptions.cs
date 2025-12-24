@@ -1,6 +1,6 @@
-﻿using Tracker.AspNet.Utils;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.Collections.Immutable;
+using Tracker.AspNet.Utils;
 using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Models;
@@ -14,7 +14,7 @@ public sealed class GlobalOptions
     public Func<HttpContext, bool> Filter { get; set; } = (_) => true;
     public HashSet<string> InvalidResponseDirectives { get; init; } = ["no-store", "immutable"];
     public HashSet<string> InvalidRequestDirectives { get; init; } = ["no-store"];
-        
+
     public string[] Tables { get; set; } = [];
     public Type[] Entities { get; set; } = [];
 

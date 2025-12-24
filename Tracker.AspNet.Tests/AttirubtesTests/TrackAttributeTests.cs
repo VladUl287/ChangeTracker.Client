@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NSubstitute;
 using System.Reflection;
 using Tracker.AspNet.Attributes;
 using Tracker.AspNet.Models;

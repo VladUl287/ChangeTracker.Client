@@ -1,7 +1,7 @@
 ﻿using Npgsql;
+using System.Collections.Immutable;
 using Tracker.Npgsql.Services;
 using Tracker.Npgsql.Tests.Utils;
-using System.Collections.Immutable;
 
 namespace Tracker.Npgsql.Tests;
 

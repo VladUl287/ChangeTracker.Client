@@ -1,5 +1,5 @@
-﻿using System.Data.Common;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
+using System.Data.Common;
 using Tracker.SqlServer.Services;
 using Tracker.SqlServer.Tests.Utils;
 
@@ -120,7 +120,7 @@ public class CommonChangeTrackingTests : IAsyncLifetime
         // Assert
         Assert.False(isTracking);
     }
-     
+
     [Fact]
     public async Task SetLastTimestamp_AlwaysThrowsInvalidOperationException()
     {

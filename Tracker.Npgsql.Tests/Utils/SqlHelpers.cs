@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Npgsql;
+﻿using Npgsql;
 
 namespace Tracker.Npgsql.Tests.Utils;
 

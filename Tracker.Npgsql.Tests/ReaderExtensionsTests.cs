@@ -1,5 +1,4 @@
 ﻿using Moq;
-using Npgsql;
 using System.Data.Common;
 using Tracker.Npgsql.Extensions;
 
