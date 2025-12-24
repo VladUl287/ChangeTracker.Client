@@ -10,7 +10,7 @@ public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimes
 
     public bool Compare(string etag, ulong lastTimestamp, string suffix)
     {
-        var timestampDigitCount = lastTimestamp.CountDigits();
+        var timestampDigitCount = lastTimestamp.GetDigitCount();
         var expectedLength = CalculateEtagLength(timestampDigitCount, suffix.Length);
 
         if (expectedLength != etag.Length)
@@ -38,7 +38,7 @@ public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimes
 
     public string Generate(ulong lastTimestamp, string suffix)
     {
-        var timestampDigitCount = lastTimestamp.CountDigits();
+        var timestampDigitCount = lastTimestamp.GetDigitCount();
         var totalLength = CalculateEtagLength(timestampDigitCount, suffix.Length);
 
         return string.Create(totalLength, (_assemblyTimestamp, lastTimestamp, suffix), (chars, state) =>

@@ -16,7 +16,7 @@ internal static class UlongExtensions
         return result == number;
     }
 
-    internal static int CountDigits(this ulong number)
+    internal static int GetDigitCount(this ulong number)
     {
         return number switch
         {

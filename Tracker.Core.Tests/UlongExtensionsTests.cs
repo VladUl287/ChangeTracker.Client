@@ -17,7 +17,7 @@ public class UlongExtensionsTests
     public void Count_Digits(ulong a, int req_count)
     {
         // Act
-        var count = a.CountDigits();
+        var count = a.GetDigitCount();
 
         // Assert
         Assert.Equal(count, req_count);
