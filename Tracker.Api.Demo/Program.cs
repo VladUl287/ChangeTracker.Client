@@ -56,25 +56,16 @@ var app = builder.Build();
         opt.Filter = (ctx) => ctx.Request.Path.ToString().Contains("roles");
     });
 
-    app.MapGet("/api/users", () =>
-        {
-            return "Get users";
-        })
+    app.MapGet("/api/users", () => "Get users")
         .WithTracking();
 
-    app.MapGet("/api/v2/users", () =>
-        {
-            return "Get users V2";
-        })
+    app.MapGet("/api/v2/users", () => "Get users V2")
         .WithTracking<RouteHandlerBuilder, DatabaseContext>((opt) =>
         {
             opt.Tables = ["roles"];
         });
 
-    app.MapGet("/api/v3/users", () =>
-        {
-            return "Get users V3";
-        })
+    app.MapGet("/api/v3/users", () => "Get users V3")
         .WithTracking<RouteHandlerBuilder, DatabaseContext>((opt) =>
         {
             opt.Entities = [typeof(Role)];
@@ -85,16 +76,10 @@ var app = builder.Build();
         .WithTracking();
 
     rolesPrefix
-        .MapGet("roles", () =>
-        {
-            return "Get roles Prefix";
-        });
+        .MapGet("roles", () => "Get roles Prefix");
 
     rolesPrefix
-        .MapGet("roles/v2", () =>
-        {
-            return "Get roles Prefix v2";
-        });
+        .MapGet("roles/v2", () => "Get roles Prefix v2");
 
     app.MapControllers();
 }
