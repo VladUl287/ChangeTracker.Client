@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.Core.Services.Contracts;
@@ -21,28 +22,29 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
 
             if (options.ProviderId is not null)
             {
-                logger.LogDebug("Resolving keyed provider: {Source}. TraceId: {TraceId}", options.ProviderId, traceId);
+                logger.LogResolvingKeyedProvider(options.ProviderId, traceId);
                 return ctx.RequestServices.GetRequiredKeyedService<ISourceProvider>(options.ProviderId);
             }
 
             if (options.SourceProvider is not null)
             {
-                logger.LogDebug("Using direct provider instance. TraceId: {TraceId}", traceId);
+                logger.LogUsingDirectProviderInstance(traceId);
                 return options.SourceProvider;
             }
 
             if (options.SourceProviderFactory is not null)
             {
-                logger.LogDebug("Creating provider via factory. TraceId: {TraceId}", traceId);
+                logger.LogCreatingProviderViaFactory(traceId);
                 shouldDispose = true;
                 return options.SourceProviderFactory(ctx);
             }
 
+            logger.LogResolvingLastRegisteredProvider(traceId);
             return ctx.RequestServices.GetRequiredService<ISourceProvider>();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to resolve source provider. TraceId: {TraceId}", traceId);
+            logger.LogFailedToResolveSourceProvider(ex, traceId);
             throw new InvalidOperationException(
                 $"Failed to resolve source provider. TraceId: {ctx.TraceIdentifier}", ex);
         }
