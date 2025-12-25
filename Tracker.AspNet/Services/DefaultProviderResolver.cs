@@ -38,8 +38,7 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
                 return options.SourceProviderFactory(ctx);
             }
 
-            throw new InvalidOperationException(
-                $"Unable to resolve source provider. No source configuration provided. TraceId: {ctx.TraceIdentifier}");
+            return ctx.RequestServices.GetRequiredService<ISourceProvider>();
         }
         catch (Exception ex)
         {
