@@ -10,12 +10,8 @@ namespace Tracker.AspNet.Extensions;
 
 public static class EndpointBuilderExtensions
 {
-    public static IEndpointConventionBuilder WithTracking(this IEndpointConventionBuilder endpoint)
-    {
-        return endpoint.AddEndpointFilter<IEndpointConventionBuilder, TrackerEndpointFilter>();
-    }
-
-    public static IEndpointConventionBuilder WithTracking<TContext>(this IEndpointConventionBuilder endpoint, GlobalOptions options)
+    public static TBuilder WithTracking<TBuilder, TContext>(this TBuilder endpoint, GlobalOptions options)
+        where TBuilder : IEndpointConventionBuilder
         where TContext : DbContext
     {
         return endpoint.AddEndpointFilterFactory((provider, next) =>
@@ -31,7 +27,20 @@ public static class EndpointBuilderExtensions
         });
     }
 
-    public static IEndpointConventionBuilder WithTracking(this IEndpointConventionBuilder endpoint, GlobalOptions options)
+    public static TBuilder WithTracking<TBuilder, TContext>(this TBuilder endpoint, Action<GlobalOptions> configure)
+        where TBuilder : IEndpointConventionBuilder
+        where TContext : DbContext
+    {
+        var options = new GlobalOptions();
+        configure(options);
+        return endpoint.WithTracking<TBuilder, TContext>(options);
+    }
+
+    public static TBuilder WithTracking<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder =>
+        builder.AddEndpointFilter<TBuilder, TrackerEndpointFilter>();
+
+    public static TBuilder WithTracking<TBuilder>(this TBuilder endpoint, GlobalOptions options)
+        where TBuilder : IEndpointConventionBuilder
     {
         return endpoint.AddEndpointFilterFactory((provider, next) =>
         {
@@ -46,18 +55,11 @@ public static class EndpointBuilderExtensions
         });
     }
 
-    public static IEndpointConventionBuilder WithTracking<TContext>(this IEndpointConventionBuilder endpoint, Action<GlobalOptions> configure)
-        where TContext : DbContext
+    public static TBuilder WithTracking<TBuilder>(this TBuilder builder, Action<GlobalOptions> configure)
+        where TBuilder : IEndpointConventionBuilder
     {
         var options = new GlobalOptions();
         configure(options);
-        return endpoint.WithTracking<TContext>(options);
-    }
-
-    public static IEndpointConventionBuilder WithTracking(this IEndpointConventionBuilder endpoint, Action<GlobalOptions> configure)
-    {
-        var options = new GlobalOptions();
-        configure(options);
-        return endpoint.WithTracking(options);
+        return builder.WithTracking(options);
     }
 }
