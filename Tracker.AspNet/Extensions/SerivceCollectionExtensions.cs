@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Tracker.AspNet.Models;
@@ -75,6 +76,8 @@ public static class SerivceCollectionExtensions
         services.AddSingleton<IRequestHandler, DefaultRequestHandler>();
 
         services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
+
+        services.AddSingleton<IStartupFilter, DefaultProvidersValidator>();
 
         return services;
     }
