@@ -53,15 +53,12 @@ public class RequestHandlerTests
             await _handler.HandleRequest(context, null, CancellationToken.None));
     }
 
-    private delegate bool TryResolveDelegate(string sourceId, out ISourceProvider? sourceOperations);
-
     [Fact]
     public async Task IsNotModified_ShouldReturnNotModified_WhenETagMatches()
     {
         // Arrange
-        var context = new DefaultHttpContext();
         var etag = "test-etag";
-
+        var context = new DefaultHttpContext();
         context.Request.Headers.IfNoneMatch = etag;
 
         var options = new ImmutableGlobalOptions
@@ -74,14 +71,10 @@ public class RequestHandlerTests
         mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
 
-        //_mockOperationsResolver.Setup(x => x.TryResolve(
-        //        It.IsAny<string>(),
-        //        out It.Ref<ISourceOperations?>.IsAny))
-        //    .Returns(new TryResolveDelegate((string id, out ISourceOperations? ops) =>
-        //    {
-        //        ops = mockSourceOperations.Object;
-        //        return true;
-        //    }));
+        var expectedShouldDispose = false;
+        _providerResolver
+            .Setup(c => c.ResolveProvider(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
+            .Returns(mockSourceOperations.Object);
 
         _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
             .Returns(true);
@@ -113,6 +106,11 @@ public class RequestHandlerTests
         var mockSourceOperations = new Mock<ISourceProvider>();
         mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
+
+        var expectedShouldDispose = false;
+        _providerResolver
+            .Setup(c => c.ResolveProvider(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
+            .Returns(mockSourceOperations.Object);
 
         _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
             .Returns(false);
