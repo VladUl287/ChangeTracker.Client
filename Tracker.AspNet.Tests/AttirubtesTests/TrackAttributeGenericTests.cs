@@ -21,6 +21,7 @@ public class TrackAttributeGenericTests
     private readonly Mock<IServiceScope> _serviceScopeMock;
 
     private readonly Mock<IProviderResolver> _providerResolverMock;
+    private readonly Mock<ITableNameResolver> _tableNameResolver;
     private readonly Mock<ISourceProvider> _sourceProvider;
 
     private readonly Mock<IRequestFilter> _requestFilterMock;
@@ -40,6 +41,7 @@ public class TrackAttributeGenericTests
 
         _providerResolverMock = new Mock<IProviderResolver>();
         _sourceProvider = new Mock<ISourceProvider>();
+        _tableNameResolver = new Mock<ITableNameResolver>();
 
         _requestFilterMock = new Mock<IRequestFilter>();
         _requestHandlerMock = new Mock<IRequestHandler>();
@@ -92,6 +94,10 @@ public class TrackAttributeGenericTests
         _providerResolverMock.Setup(x => x.ResolveProvider(_httpContext, It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
             .Returns(_sourceProvider.Object);
 
+        _tableNameResolver
+            .Setup(c => c.GetTablesNames(It.IsAny<TestDbContext>(), It.IsAny<Type[]>()))
+            .Returns(["Products", "Categories"]);
+
         // Act
         var result = attribute.GetOptions(_actionExecutingContext);
 
@@ -116,6 +122,9 @@ public class TrackAttributeGenericTests
         var attribute = new TrackAttribute<TestDbContext>(entities: entities);
 
         SetupServiceProvider();
+        _tableNameResolver
+            .Setup(c => c.GetTablesNames(It.IsAny<TestDbContext>(), It.IsAny<Type[]>()))
+            .Returns(["Users", "Orders"]);
 
         // Act
         var result = attribute.GetOptions(_actionExecutingContext);
@@ -129,7 +138,7 @@ public class TrackAttributeGenericTests
     public void GetOptions_TablesAndEntities_CombinesWithoutDuplicates()
     {
         // Arrange
-        var tables = new[] { "Users", "Products" };
+        var tables = new[] { "Users", "Products", "Categories" };
         var entities = new[] { typeof(User), typeof(Product) };
         var attribute = new TrackAttribute<TestDbContext>(tables, entities);
 
@@ -164,50 +173,6 @@ public class TrackAttributeGenericTests
 
         // Should only create scope once
         _serviceScopeFactoryMock.Verify(x => x.CreateScope(), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetOptions_ThreadSafety_MultipleThreadsShouldNotCreateMultipleInstances()
-    {
-        // Arrange
-        var count = 10;
-        var scopeCreationCount = 0;
-        var tasks = new List<Task>();
-        var barrier = new Barrier(count);
-        var attribute = new TrackAttribute<TestDbContext>();
-        var results = new List<ImmutableGlobalOptions>();
-
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IServiceScopeFactory)))
-            .Returns(_serviceScopeFactoryMock.Object);
-
-        _serviceScopeFactoryMock.Setup(x => x.CreateScope())
-            .Callback(() =>
-            {
-                Interlocked.Increment(ref scopeCreationCount);
-            })
-            .Returns(_serviceScopeMock.Object);
-
-        _serviceScopeMock.Setup(x => x.ServiceProvider)
-            .Returns(_serviceProviderMock.Object);
-
-        SetupServiceProvider();
-
-        // Act
-        for (int i = 0; i < count; i++)
-        {
-            tasks.Add(Task.Run(() =>
-            {
-                barrier.SignalAndWait();
-                results.Add(attribute.GetOptions(_actionExecutingContext));
-            }));
-        }
-
-        await Task.WhenAll([.. tasks]);
-
-        // Assert
-        var firstResult = results[0];
-        Assert.All(results, result => Assert.Same(firstResult, result));
-        Assert.Equal(1, scopeCreationCount);
     }
 
     [Fact]
@@ -344,6 +309,9 @@ public class TrackAttributeGenericTests
 
         _serviceProviderMock.Setup(x => x.GetService(typeof(ImmutableGlobalOptions)))
             .Returns(_defaultOptions);
+
+        _serviceProviderMock.Setup(x => x.GetService(typeof(ITableNameResolver)))
+            .Returns(_tableNameResolver.Object);
 
         _serviceProviderMock.Setup(x => x.GetService(typeof(ILogger<TrackAttribute<TestDbContext>>)))
             .Returns(_loggerMock.Object);

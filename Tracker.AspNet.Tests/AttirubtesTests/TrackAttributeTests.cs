@@ -100,6 +100,14 @@ public class TrackAttributeTests
         _providerResolverMock.Setup(x => x.ResolveProvider(_httpContext, It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
             .Returns(_sourceProvider.Object);
 
+        _serviceProviderMock.Setup(x => x.GetService(typeof(ImmutableGlobalOptions)))
+            .Returns(new ImmutableGlobalOptions
+            {
+                CacheControl = "max-age=3600",
+                SourceProvider = _sourceProvider.Object,
+                Tables = []
+            });
+
         // Act
         var result = attribute.GetOptions(_actionExecutingContext);
 
@@ -175,10 +183,13 @@ public class TrackAttributeTests
         var attribute = new TrackAttribute(null, null, null);
 
         SetupScopeServiceProvider();
-
-        bool expectedShouldDispose = false;
-        _providerResolverMock.Setup(x => x.ResolveProvider(_httpContext, It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
-            .Returns(_sourceProvider.Object);
+        _serviceProviderMock.Setup(x => x.GetService(typeof(ImmutableGlobalOptions)))
+           .Returns(new ImmutableGlobalOptions
+           {
+               CacheControl = "max-age=3600",
+               SourceProvider = _sourceProvider.Object,
+               Tables = []
+           });
 
         // Act
         var result = attribute.GetOptions(_actionExecutingContext);
