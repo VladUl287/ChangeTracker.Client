@@ -78,6 +78,8 @@ public static class SerivceCollectionExtensions
 
         services.AddSingleton<IProviderResolver, DefaultProviderResolver>();
 
+        services.AddSingleton<ITableNameResolver, DefaultTableNameResolver>();
+
         return services;
     }
 }
