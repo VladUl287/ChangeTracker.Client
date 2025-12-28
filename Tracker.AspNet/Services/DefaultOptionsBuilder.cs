@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Tracker.AspNet.Models;
 using System.Runtime.CompilerServices;
+using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 using Tracker.AspNet.Utils;
 using Tracker.Core.Services.Contracts;

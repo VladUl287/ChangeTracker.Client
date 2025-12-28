@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Tracker.AspNet.Middlewares;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
 
@@ -273,5 +272,5 @@ public class ApplicationBuilderExtensionsTests
     }
 
     private class TestDbContext : DbContext
-    {}
+    { }
 }
