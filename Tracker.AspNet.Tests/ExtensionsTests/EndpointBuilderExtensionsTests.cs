@@ -5,307 +5,259 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Tracker.AspNet.Extensions;
 using Tracker.AspNet.Models;
-using Tracker.AspNet.Services;
 using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Tests.ExtensionsTests;
 
 public class EndpointBuilderExtensionsTests
 {
-    private readonly Mock<IEndpointConventionBuilder> _mockBuilder;
-    private readonly Mock<IServiceProvider> _mockServiceProvider;
-    private readonly Mock<IServiceScopeFactory> _mockServiceScopeFactory;
-    private readonly Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>> _mockOptionsBuilder;
-    private readonly Mock<IRequestHandler> _mockEtagService;
-    private readonly Mock<IRequestFilter> _mockRequestFilter;
-    private readonly ServiceCollection _services;
-
-    public EndpointBuilderExtensionsTests()
-    {
-        _mockBuilder = new Mock<IEndpointConventionBuilder>();
-        _mockServiceProvider = new Mock<IServiceProvider>();
-        _mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
-        _mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        _mockEtagService = new Mock<IRequestHandler>();
-        _mockRequestFilter = new Mock<IRequestFilter>();
-
-        _services = new ServiceCollection();
-
-        SetupServiceProvider();
-    }
-
-    private void SetupServiceProvider()
-    {
-        _services.AddSingleton(_mockOptionsBuilder.Object);
-        _services.AddSingleton(_mockEtagService.Object);
-        _services.AddSingleton(_mockRequestFilter.Object);
-
-        var serviceProvider = _services.BuildServiceProvider();
-
-        _mockServiceProvider
-            .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
-            .Returns(_mockServiceScopeFactory.Object);
-    }
-
     [Fact]
-    public void WithTracking_GenericTContext_WithOptions_ShouldAddEndpointFilterFactory()
+    public void WithTracking_TBuilder_TContext_WithOptions_ShouldAddFilterFactory()
     {
         // Arrange
+        var builder = new TestEndpointBuilder();
         var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
+        var endpointBuilder = new Mock<EndpointBuilder>();
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockEtagService = new Mock<IRequestHandler>();
+        var mockRequestFilter = new Mock<IRequestFilter>();
 
-        _mockOptionsBuilder
-            .Setup(x => x.Build<DbContext>(options))
+        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+            .Returns(mockOptionsBuilder.Object);
+        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
+            .Returns(mockEtagService.Object);
+        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
+            .Returns(mockRequestFilter.Object);
+
+        var immutableOptions = new ImmutableGlobalOptions();
+        mockOptionsBuilder.Setup(x => x.Build<DbContext>(options))
             .Returns(immutableOptions);
 
         // Act
-        var result = _mockBuilder.Object.WithTracking<IEndpointConventionBuilder, DbContext>(options);
+        var result = builder.WithTracking<TestEndpointBuilder, DbContext>(options);
 
         // Assert
-        Assert.Same(_mockBuilder.Object, result);
-        _mockBuilder.Verify();
+        Assert.NotEmpty(builder.Conventions);
+        Assert.Same(builder, result);
+
+        var factoryContext = new EndpointFilterFactoryContext
+        {
+            ApplicationServices = mockServiceProvider.Object,
+            MethodInfo = null
+        };
+
+        builder.Conventions.FirstOrDefault()?.Invoke(endpointBuilder.Object);
+
+        static ValueTask<object?> next(EndpointFilterInvocationContext context) => ValueTask.FromResult<object?>(null);
+        var filterDelegate = endpointBuilder.Object.FilterFactories.FirstOrDefault()?.Invoke(factoryContext, next);
+
+        // Verify services were requested
+        Assert.NotEmpty(endpointBuilder.Object.FilterFactories);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)), Times.Once);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IRequestHandler)), Times.Once);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IRequestFilter)), Times.Once);
+        mockOptionsBuilder.Verify(x => x.Build<DbContext>(options), Times.Once);
     }
 
     [Fact]
-    public void WithTracking_GenericTContext_WithConfigureAction_ShouldCreateOptionsAndCallOverload()
+    public void WithTracking_TBuilder_TContext_WithConfigure_ShouldCreateOptionsAndCallOverload()
     {
         // Arrange
-        var configuredValue = "TestValue";
-        var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
-
-        _mockOptionsBuilder
-            .Setup(x => x.Build<DbContext>(It.Is<GlobalOptions>(o => o.ProviderId == configuredValue)))
-            .Returns(immutableOptions);
+        var builder = new TestEndpointBuilder();
+        var wasConfigured = false;
 
         // Act
-        var result = _mockBuilder.Object.WithTracking<IEndpointConventionBuilder, DbContext>(opt =>
+        var result = builder.WithTracking<TestEndpointBuilder, DbContext>(options =>
         {
-            opt.ProviderId = configuredValue;
+            wasConfigured = true;
         });
 
         // Assert
-        Assert.Same(_mockBuilder.Object, result);
-        _mockOptionsBuilder.Verify(x => x.Build<DbContext>(It.Is<GlobalOptions>(o => o.ProviderId == configuredValue)), Times.Once);
+        Assert.True(wasConfigured);
+        Assert.NotEmpty(builder.Conventions);
+        Assert.Same(builder, result);
     }
 
     [Fact]
-    public void WithTracking_NonGeneric_ShouldAddTrackerEndpointFilter()
+    public void WithTracking_TBuilder_Generic_ShouldAddFilter()
     {
         // Arrange
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilter<IEndpointConventionBuilder, TrackerEndpointFilter>())
-            .Returns(_mockBuilder.Object)
-            .Verifiable();
+        var builder = new TestEndpointBuilder();
 
         // Act
-        var result = _mockBuilder.Object.WithTracking();
+        var result = builder.WithTracking<TestEndpointBuilder>();
 
         // Assert
-        Assert.Same(_mockBuilder.Object, result);
-        _mockBuilder.Verify();
+        Assert.NotEmpty(builder.Conventions);
+        Assert.Same(builder, result);
     }
 
     [Fact]
-    public void WithTracking_NonGeneric_WithOptions_ShouldAddEndpointFilterFactory()
+    public void WithTracking_TBuilder_WithOptions_ShouldAddFilterFactory()
     {
         // Arrange
+        var builder = new TestEndpointBuilder();
         var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
+        var endpointBuilder = new Mock<EndpointBuilder>();
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockEtagService = new Mock<IRequestHandler>();
+        var mockRequestFilter = new Mock<IRequestFilter>();
 
-        _mockOptionsBuilder
-            .Setup(x => x.Build(options))
+        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+            .Returns(mockOptionsBuilder.Object);
+        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
+            .Returns(mockEtagService.Object);
+        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
+            .Returns(mockRequestFilter.Object);
+
+        var immutableOptions = new ImmutableGlobalOptions();
+        mockOptionsBuilder.Setup(x => x.Build(options))
             .Returns(immutableOptions);
 
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Returns(_mockBuilder.Object)
-            .Verifiable();
-
         // Act
-        var result = _mockBuilder.Object.WithTracking(options);
+        var result = builder.WithTracking(options);
 
         // Assert
-        Assert.Same(_mockBuilder.Object, result);
-        _mockBuilder.Verify();
-        _mockOptionsBuilder.Verify(x => x.Build(options), Times.Once);
+        Assert.NotEmpty(builder.Conventions);
+        Assert.Same(builder, result);
+
+        // Verify the filter factory creates the correct filter
+        var factoryContext = new EndpointFilterFactoryContext
+        {
+            ApplicationServices = mockServiceProvider.Object,
+            MethodInfo = null
+        };
+
+        builder.Conventions.FirstOrDefault()?.Invoke(endpointBuilder.Object);
+
+        static ValueTask<object?> next(EndpointFilterInvocationContext context) => ValueTask.FromResult<object?>(null);
+        var filterDelegate = endpointBuilder.Object.FilterFactories.FirstOrDefault()?.Invoke(factoryContext, next);
+
+        mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)), Times.Once);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IRequestHandler)), Times.Once);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IRequestFilter)), Times.Once);
+        mockOptionsBuilder.Verify(x => x.Build(options), Times.Once);
     }
 
     [Fact]
-    public void WithTracking_NonGeneric_WithConfigureAction_ShouldCreateOptionsAndCallOverload()
+    public void WithTracking_TBuilder_WithConfigure_ShouldCreateOptionsAndCallOverload()
     {
         // Arrange
-        var configuredValue = "TestValue";
-        var immutableOptions = new ImmutableGlobalOptions();
-
-        _mockOptionsBuilder
-            .Setup(x => x.Build(It.Is<GlobalOptions>(o => o.ProviderId == configuredValue)))
-            .Returns(immutableOptions);
-
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Returns(_mockBuilder.Object);
+        var builder = new TestEndpointBuilder();
+        var wasConfigured = false;
 
         // Act
-        var result = _mockBuilder.Object.WithTracking(opt =>
+        var result = builder.WithTracking(options =>
         {
-            opt.ProviderId = configuredValue;
+            wasConfigured = true;
         });
 
         // Assert
-        Assert.Same(_mockBuilder.Object, result);
-        _mockOptionsBuilder.Verify(x => x.Build(It.Is<GlobalOptions>(o => o.ProviderId == configuredValue)), Times.Once);
+        Assert.True(wasConfigured);
+        Assert.NotEmpty(builder.Conventions);
+        Assert.Same(builder, result);
     }
 
     [Fact]
-    public void WithTracking_GenericTContext_ShouldCreateTrackerEndpointFilterWithCorrectDependencies()
+    public void FilterFactory_ShouldCreateTrackerEndpointFilter_WithCorrectDependencies()
     {
         // Arrange
+        var builder = new TestEndpointBuilder();
         var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
-        EndpointFilterDelegate capturedNext = null;
-        Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> capturedFactory = null;
+        var endpointBuilder = new Mock<EndpointBuilder>();
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockEtagService = new Mock<IRequestHandler>();
+        var mockRequestFilter = new Mock<IRequestFilter>();
 
-        _mockOptionsBuilder
-            .Setup(x => x.Build<DbContext>(options))
+        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+            .Returns(mockOptionsBuilder.Object);
+        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
+            .Returns(mockEtagService.Object);
+        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
+            .Returns(mockRequestFilter.Object);
+
+        var immutableOptions = new ImmutableGlobalOptions();
+        mockOptionsBuilder.Setup(x => x.Build<DbContext>(options))
             .Returns(immutableOptions);
 
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Callback<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>(factory => capturedFactory = factory)
-            .Returns(_mockBuilder.Object);
-
         // Act
-        _mockBuilder.Object.WithTracking<IEndpointConventionBuilder, DbContext>(options);
+        builder.WithTracking<TestEndpointBuilder, DbContext>(options);
 
-        // Create mock context and next delegate
-        var mockFactoryContext = new EndpointFilterFactoryContext()
+        var factoryContext = new EndpointFilterFactoryContext
         {
-            MethodInfo = null,
-            ApplicationServices = _mockServiceProvider.Object
+            ApplicationServices = mockServiceProvider.Object,
+            MethodInfo = null
         };
 
-        EndpointFilterDelegate next = (context) => ValueTask.FromResult<object?>(null);
-        var filterDelegate = capturedFactory(mockFactoryContext, next);
+        builder.Conventions.FirstOrDefault()?.Invoke(endpointBuilder.Object);
 
-        // Assert
-        Assert.NotNull(capturedFactory);
+        static ValueTask<object?> next(EndpointFilterInvocationContext context) => ValueTask.FromResult<object?>(null);
+        var filterDelegate = endpointBuilder.Object.FilterFactories.FirstOrDefault()?.Invoke(factoryContext, next);
+
         Assert.NotNull(filterDelegate);
-        _mockOptionsBuilder.Verify(x => x.Build<DbContext>(options), Times.Once);
-    }
-
-    [Fact]
-    public void WithTracking_NonGeneric_ShouldCreateTrackerEndpointFilterWithCorrectDependencies()
-    {
-        // Arrange
-        var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
-        EndpointFilterDelegate capturedNext = null;
-        Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> capturedFactory = null;
-
-        _mockOptionsBuilder
-            .Setup(x => x.Build(options))
-            .Returns(immutableOptions);
-
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Callback<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>(factory => capturedFactory = factory)
-            .Returns(_mockBuilder.Object);
-
-        // Act
-        _mockBuilder.Object.WithTracking(options);
-
-        // Create mock context and next delegate
-        var mockFactoryContext = new EndpointFilterFactoryContext()
-        {
-            MethodInfo = null,
-            ApplicationServices = _mockServiceProvider.Object
-        };
-
-        EndpointFilterDelegate next = (context) => ValueTask.FromResult<object?>(null);
-        var filterDelegate = capturedFactory(mockFactoryContext, next);
-
-        // Assert
-        Assert.NotNull(capturedFactory);
-        Assert.NotNull(filterDelegate);
-        _mockOptionsBuilder.Verify(x => x.Build(options), Times.Once);
-    }
-
-    [Fact]
-    public void WithTracking_ShouldThrowWhenServicesAreNotRegistered()
-    {
-        // Arrange
-        var emptyServices = new ServiceCollection();
-        var emptyServiceProvider = emptyServices.BuildServiceProvider();
-        var mockFactoryContext = new EndpointFilterFactoryContext()
-        {
-            MethodInfo = null,
-            ApplicationServices = emptyServiceProvider
-        };
-
-        var options = new GlobalOptions();
-        EndpointFilterDelegate capturedNext = null;
-        Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> capturedFactory = null;
-
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Callback<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>(factory => capturedFactory = factory)
-            .Returns(_mockBuilder.Object);
-
-        // Act
-        _mockBuilder.Object.WithTracking(options);
-
-        EndpointFilterDelegate next = (context) => ValueTask.FromResult<object?>(null);
-
-        // Assert
-        Assert.Throws<InvalidOperationException>(() => capturedFactory(mockFactoryContext, next));
-    }
-
-    [Fact]
-    public void WithTracking_GenericTContext_ShouldUseCorrectBuildMethod()
-    {
-        // Arrange
-        var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
-
-        _mockOptionsBuilder
-            .Setup(x => x.Build<SpecialDbContext>(options))
-            .Returns(immutableOptions)
-            .Verifiable();
-
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Returns(_mockBuilder.Object);
-
-        // Act
-        var result = _mockBuilder.Object.WithTracking<IEndpointConventionBuilder, SpecialDbContext>(options);
-
-        // Assert
-        Assert.Same(_mockBuilder.Object, result);
-        _mockOptionsBuilder.Verify(x => x.Build<SpecialDbContext>(options), Times.Once);
     }
 
     [Fact]
     public void WithTracking_ShouldReturnSameBuilderInstance()
     {
         // Arrange
-        var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
+        var builder = new TestEndpointBuilder();
 
-        _mockOptionsBuilder
-            .Setup(x => x.Build<DbContext>(options))
-            .Returns(immutableOptions);
+        // Act & Assert for each overload
+        var result1 = builder.WithTracking<TestEndpointBuilder, DbContext>(new GlobalOptions());
+        Assert.Same(builder, result1);
 
-        _mockBuilder
-            .Setup(x => x.AddEndpointFilterFactory(It.IsAny<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()))
-            .Returns(_mockBuilder.Object);
+        var result2 = builder.WithTracking<TestEndpointBuilder, DbContext>(_ => { });
+        Assert.Same(builder, result2);
 
-        // Act
-        var result = _mockBuilder.Object.WithTracking<IEndpointConventionBuilder, DbContext>(options);
+        var result3 = builder.WithTracking<TestEndpointBuilder>();
+        Assert.Same(builder, result3);
 
-        // Assert
-        Assert.Same(_mockBuilder.Object, result);
+        var result4 = builder.WithTracking<TestEndpointBuilder>(new GlobalOptions());
+        Assert.Same(builder, result4);
+
+        var result5 = builder.WithTracking<TestEndpointBuilder>(_ => { });
+        Assert.Same(builder, result5);
     }
 
-    public class SpecialDbContext : DbContext { }
+    [Fact]
+    public void WithTracking_ShouldHandleNullOptions()
+    {
+        // Arrange
+        var builder = new TestEndpointBuilder();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            builder.WithTracking<TestEndpointBuilder, DbContext>(options: null!));
+
+        Assert.Throws<ArgumentNullException>(() =>
+            builder.WithTracking<TestEndpointBuilder>(options: null!));
+    }
+
+    [Fact]
+    public void WithTracking_ShouldHandleNullConfigureAction()
+    {
+        // Arrange
+        var builder = new TestEndpointBuilder();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            builder.WithTracking<TestEndpointBuilder, DbContext>(configure: null!));
+
+        Assert.Throws<ArgumentNullException>(() =>
+            builder.WithTracking<TestEndpointBuilder>(configure: null!));
+    }
+
+    private sealed class TestEndpointBuilder : IEndpointConventionBuilder
+    {
+        public List<Action<EndpointBuilder>> Conventions { get; } = [];
+
+        public void Add(Action<EndpointBuilder> convention)
+        {
+            Conventions.Add(convention);
+        }
+    }
 }

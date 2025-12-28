@@ -14,6 +14,9 @@ public static class EndpointBuilderExtensions
         where TBuilder : IEndpointConventionBuilder
         where TContext : DbContext
     {
+        ArgumentNullException.ThrowIfNull(endpoint, nameof(endpoint));
+        ArgumentNullException.ThrowIfNull(options, nameof(options));
+
         return endpoint.AddEndpointFilterFactory((provider, next) =>
         {
             var builder = provider.ApplicationServices.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
@@ -31,6 +34,8 @@ public static class EndpointBuilderExtensions
         where TBuilder : IEndpointConventionBuilder
         where TContext : DbContext
     {
+        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+
         var options = new GlobalOptions();
         configure(options);
         return endpoint.WithTracking<TBuilder, TContext>(options);
@@ -42,6 +47,9 @@ public static class EndpointBuilderExtensions
     public static TBuilder WithTracking<TBuilder>(this TBuilder endpoint, GlobalOptions options)
         where TBuilder : IEndpointConventionBuilder
     {
+        ArgumentNullException.ThrowIfNull(endpoint, nameof(endpoint));
+        ArgumentNullException.ThrowIfNull(options, nameof(options));
+
         return endpoint.AddEndpointFilterFactory((provider, next) =>
         {
             var builder = provider.ApplicationServices.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
@@ -58,6 +66,8 @@ public static class EndpointBuilderExtensions
     public static TBuilder WithTracking<TBuilder>(this TBuilder builder, Action<GlobalOptions> configure)
         where TBuilder : IEndpointConventionBuilder
     {
+        ArgumentNullException.ThrowIfNull(configure, nameof(configure));
+
         var options = new GlobalOptions();
         configure(options);
         return builder.WithTracking(options);
