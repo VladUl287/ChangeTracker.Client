@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Tracker.Npgsql.Tests.Utils;
 
@@ -31,6 +32,19 @@ internal static class SqlHelpers
             ", connection);
 
         await createTableCmd.ExecuteNonQueryAsync();
+    }
+
+    public static async Task<long> GetDatabaseTimestampAsync(string connectionString)
+    {
+        using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        const string query = "SELECT CURRENT_TIMESTAMP;";
+        using var cmd = new NpgsqlCommand(query, connection);
+        using var reader = await cmd.ExecuteReaderAsync();
+        await reader.ReadAsync();
+        var timestamp = reader.GetFieldValue<DateTimeOffset>(0).UtcTicks;
+        return timestamp;
     }
 
     internal static async Task DropTable(string connectionString, string tableName)

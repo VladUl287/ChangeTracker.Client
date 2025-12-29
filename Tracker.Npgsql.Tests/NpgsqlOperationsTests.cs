@@ -194,7 +194,9 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
     public async Task GetLastVersion_InsertToTable_ReturnsCorrectTimestamp()
     {
         //Arrange
-        var utcNow = DateTime.UtcNow;
+        var utcNow = await SqlHelpers.GetDatabaseTimestampAsync(_connectionString);
+
+        await _operations.DisableTracking(_testTableName);
         await _operations.EnableTracking(_testTableName);
 
         // Act
@@ -203,14 +205,14 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         var timestamp2 = await _operations.GetLastVersion(_testTableName);
         await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 12);
         var timestamp3 = await _operations.GetLastVersion(_testTableName);
-        await Task.Delay(100);
+        await Task.Delay(50);
         var timestamp4 = await _operations.GetLastVersion(_testTableName);
 
         // Assert
-        Assert.True(utcNow.Ticks < timestamp1);
-        Assert.True(utcNow.Ticks < timestamp2);
-        Assert.True(utcNow.Ticks < timestamp3);
-        Assert.True(utcNow.Ticks < timestamp4);
+        Assert.True(utcNow < timestamp1);
+        Assert.True(utcNow < timestamp2);
+        Assert.True(utcNow < timestamp3);
+        Assert.True(utcNow < timestamp4);
         Assert.True(timestamp1 < timestamp2);
         Assert.True(timestamp2 < timestamp3);
         Assert.True(timestamp3 == timestamp4);
