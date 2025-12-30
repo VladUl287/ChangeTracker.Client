@@ -204,7 +204,7 @@ builder.Services
     );
 ```
 
-Provider Id used to identify ISourceProvider service in case of multiple added providers.
+**ProviderId** used to identify ISourceProvider service in case of multiple providers.
 
 2. **Controller Action (MVC/Web API)**
 Apply caching to specific endpoints using the [Track] attribute:
