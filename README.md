@@ -2,7 +2,7 @@
 
 Change Tracker is inspired by [Delta Project](https://github.com/SimonCropp/Delta)
 
-Change Tracker is a .NET library for efficient HTTP caching using database change tracking. 
+Change Tracker is a .NET library for efficient HTTP caching using database change tracking.
 It implements **304 Not Modified** responses by generating ETags based on database timestamps,
 reducing server load while ensuring clients always receive current data.
 
@@ -14,8 +14,8 @@ Change Tracker monitors database changes and generates ETags that combine:
 * Database timestamp (last data modification time)
 * Custom suffix (optional runtime context)
 
-When a client requests data with a cached ETag, the server compares it with the current state. 
-If unchanged, it returns **304 Not Modified** - the client uses its cached copy. 
+When a client requests data with a cached ETag, the server compares it with the current state.
+If unchanged, it returns **304 Not Modified** - the client uses its cached copy.
 If changed, fresh data is returned with a new ETag.
 
 ## Ideal Use Case
@@ -37,16 +37,13 @@ ETags follow this format:
 {AssemblyWriteTime}-{DbTimeStamp}-{Suffix}
 ```
 
-#### 1. Assembly Write Time
+### 1. Assembly Write Time
+
 The last modification time of your web application's assembly:
 
-<a id='snippet-AssemblyWriteTime'></a>
+**Default implementation:**
 
 ```cs
-services.AddSingleton<IAssemblyTimestampProvider>(
-  new AssemblyTimestampProvider(Assembly.GetExecutingAssembly())
-);
-
 public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTimestampProvider
 {
     public DateTimeOffset GetWriteTime()
@@ -60,20 +57,29 @@ public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTime
     }
 }
 ```
-<sup><a href='' title='Snippet source file'>snippet source</a> | 
-<a href='#snippet-AssemblyWriteTime' title='Start of snippet'>anchor</a></sup>
 
-#### 2. Database Timestamp
+[snippet source](/Tracker.Core/Services/AssemblyTimestampProvider.cs)
+
+**Registration:**
+
+```cs
+services.AddSingleton<IAssemblyTimestampProvider>(
+  new AssemblyTimestampProvider(Assembly.GetExecutingAssembly())
+);
+```
+
+[snippet source](/Tracker.AspNet/Extensions/ServiceCollectionExtensions.cs)
+
+### 2. Database Timestamp
+
 Tracks when data was last modified. Implementation varies by database:
 
 * [SQL Server timestamp calculation](/docs/sqlserver.md#timestamp-calculation)
 * [Postgres timestamp calculation](/docs/postgres.md#timestamp-calculation)
 
-#### 3. Custom Suffix (Optional)
+### 3. Custom Suffix (Optional)
 
 Dynamic string based on HTTP context for fine-grained cache control:
-
-<a id='snippet-Suffix'></a>
 
 ```cs
 var builder = WebApplication.CreateBuilder(args);
@@ -99,13 +105,10 @@ var app = builder.Build();
       });
 }
 ```
-<sup><a href='' title='Snippet source file'>snippet source</a> | <a href='#snippet-Suffix' title='Start of snippet'>anchor</a></sup>
 
-#### 4. ETag Generation & Comparison
+### 4. ETag Generation & Comparison
 
 Efficient comparison avoids string allocation when data is unchanged:
-
-<a id='snippet-BuildEtag'></a>
 
 ```cs
 public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimestampProvider) : IETagProvider
@@ -117,18 +120,20 @@ public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimes
     public string Generate(ulong lastTimestamp, string suffix);
 }
 ```
-<sup><a href='' title='Snippet source file'>snippet source</a> | <a href='#snippet-BuildEtag' title='Start of snippet'>anchor</a></sup>
 
-#### 5. Usage Examples
+[snippet source](/Tracker.Core/Services/DefaultETagProvider.cs)
 
-1. **Service Registration**
-Basic Setup
+### 5. Usage Examples
+
+### 1. Chanage Tracker Registration
+
+#### Basic Setup
 
 ```cs
 builder.Services.AddTracker();
 ```
 
-**With Global Configuration**
+#### With Global Configuration
 
 ```cs
 builder.Services.AddTracker(new GlobalOptions()
@@ -144,17 +149,20 @@ builder.Services.AddTracker(options =>
 });
 ```
 
-For Change Tracker to function correctly, you must register a database-specific source provider. 
+#### Provider Documentation
+
+For Change Tracker to function correctly, you must register a database-specific source provider.
 This component monitors database changes and provides timestamps for ETag generation.
 
-##### Provider Documentation
 Detailed implementation guides for each database:
+
 * [PostgreSQL Docs](/docs/postgres.md) when using [PostgreSQL Npgsql](https://www.npgsql.org)
 * [SQL Server Docs](/docs/sqlserver.md) when using [SQL Server SqlClient](https://github.com/dotnet/SqlClient)
 
 Available Provider Implementations
 
-**PostgreSQL (Npgsql)**
+##### PostgreSQL (Npgsql)
+
 ```cs
 // Register with DbContext
 builder.Services
@@ -175,8 +183,12 @@ builder.Services
     );
 ```
 
-**SQL Server (SqlClient)**
+[default npgsql provider](/Tracker.Npgsql/Services/NpgsqlOperations.cs)
+
+##### SQL Server (SqlClient)
+
 SQL Server supports multiple tracking modes for different scenarios:
+
 ```cs
 // Default registration with DbContext
 builder.Services
@@ -204,9 +216,13 @@ builder.Services
     );
 ```
 
-**ProviderId** used to identify ISourceProvider service in case of multiple providers.
+[default change tracking provider](/Tracker.SqlServer/Services/SqlServerChangeTrackingOperations.cs)
+[default db index usage stats provider](/Tracker.SqlServer/Services/SqlServerIndexUsageOperations.cs)
 
-2. **Controller Action (MVC/Web API)**
+### 2. Change Tracker Usage
+
+#### 1. Controller Action (MVC/Web API)
+
 Apply caching to specific endpoints using the [Track] attribute:
 
 ```cs
@@ -218,8 +234,9 @@ public ActionResult<IEnumerable<Role>> GetAll()
 }
 ```
 
-3. **Middleware Configuration**
-Apply caching globally with request filtering:
+#### 2. Middleware Configuration
+
+Apply caching globally:
 
 ```cs
 app.UseTracker(options =>
@@ -231,22 +248,13 @@ app.UseTracker(options =>
 });
 ```
 
-4. **Minimal APIs**
+1. **Minimal APIs**
 Configure tracking directly on minimal API endpoints:
 
 ```cs
-app.MapGet("/api/roles", () => 
-{
-    // Your endpoint logic
-})
-.WithTracking(options =>
-{
-    options.Tables = ["roles"];
-    options.CacheControl = "max-age=60, stale-while-revalidate=60, stale-if-error=86400";
-});
-
 app.MapGet("/api/user-profile", () => 
 {
+    // Your endpoint logic
 })
 .WithTracking(options =>
 {
@@ -270,7 +278,7 @@ app.MapGet("/api/user-profile", () =>
 * Request Header: if-none-match (with ETag value)
 * Response Header: etag (current ETag)
 
-###  Testing Cache Misses
+### Testing Cache Misses
 
 To test the full request pipeline:
 
