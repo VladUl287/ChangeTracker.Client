@@ -37,7 +37,7 @@ ETags follow this format:
 {AssemblyWriteTime}-{DbTimeStamp}-{Suffix}
 ```
 
-### 1. Assembly Write Time
+#### 1. Assembly Write Time
 
 The last modification time of your web application's assembly:
 
@@ -70,14 +70,14 @@ services.AddSingleton<IAssemblyTimestampProvider>(
 
 [snippet source](/Tracker.AspNet/Extensions/ServiceCollectionExtensions.cs)
 
-### 2. Database Timestamp
+#### 2. Database Timestamp
 
 Tracks when data was last modified. Implementation varies by database:
 
 * [SQL Server timestamp calculation](/docs/sqlserver.md#timestamp-calculation)
 * [Postgres timestamp calculation](/docs/postgres.md#timestamp-calculation)
 
-### 3. Custom Suffix (Optional)
+#### 3. Custom Suffix (Optional)
 
 Dynamic string based on HTTP context for fine-grained cache control:
 
@@ -106,7 +106,7 @@ var app = builder.Build();
 }
 ```
 
-### 4. ETag Generation & Comparison
+#### 4. ETag Generation & Comparison
 
 Efficient comparison avoids string allocation when data is unchanged:
 
@@ -123,17 +123,17 @@ public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimes
 
 [snippet source](/Tracker.Core/Services/DefaultETagProvider.cs)
 
-### 5. Usage Examples
+#### 5. Usage Examples
 
-### 1. Chanage Tracker Registration
+#### 1. Chanage Tracker Registration
 
-#### Basic Setup
+##### Basic Setup
 
 ```cs
 builder.Services.AddTracker();
 ```
 
-#### With Global Configuration
+##### With Global Configuration
 
 ```cs
 builder.Services.AddTracker(new GlobalOptions()
@@ -149,7 +149,7 @@ builder.Services.AddTracker(options =>
 });
 ```
 
-#### Provider Documentation
+##### Provider Documentation
 
 For Change Tracker to function correctly, you must register a database-specific source provider.
 This component monitors database changes and provides timestamps for ETag generation.
