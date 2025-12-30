@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Npgsql;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Tracker.Npgsql.Tests.Utils;
@@ -29,6 +30,20 @@ internal static class SqlHelpers
                 INSERT INTO {tableName}(
 	            ""value"")
 	            VALUES ({value});
+            ", connection);
+
+        await createTableCmd.ExecuteNonQueryAsync();
+    }
+
+    internal static async Task InsertToTestFromTestTable(string connectionString, string sourceTableName, string destTableName)
+    {
+        using var connection = new NpgsqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        using var createTableCmd = new NpgsqlCommand(
+            $@"
+                INSERT INTO {destTableName}(""value"")
+                SELECT ""value"" FROM {sourceTableName};
             ", connection);
 
         await createTableCmd.ExecuteNonQueryAsync();
