@@ -216,9 +216,7 @@ builder.Services
     );
 ```
 
-[default change tracking provider](/Tracker.SqlServer/Services/SqlServerChangeTrackingOperations.cs)
-
-[default db index usage stats provider](/Tracker.SqlServer/Services/SqlServerIndexUsageOperations.cs)
+[default ChangeTrackingProvider](/Tracker.SqlServer/Services/SqlServerChangeTrackingOperations.cs) | [default DbIndexUsageStatsProvider](/Tracker.SqlServer/Services/SqlServerIndexUsageOperations.cs)
 
 #### 2. Change Tracker Usage
 
