@@ -1,32 +1,37 @@
 # PostgreSQL usage
 
-Official documenation [PostgreSQL Npgsql](https://www.npgsql.org).
+Official documentation: [PostgreSQL Npgsql](https://www.npgsql.org).
 
 ## Implementation
 
-Postgres required [track_commit_timestamp](https://www.postgresql.org/docs/17/runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP)
-to be enabled for cases when no tables specified in options.
-This can be done using `ALTER SYSTEM SET track_commit_timestamp to "on"` and then restarting the Postgres service
+PostgreSQL requires [track_commit_timestamp](https://www.postgresql.org/docs/17/runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP) to be enabled for cases when no tables are specified in options.
 
-For cases when need track specific tables must be used specific custom extension which developed specifically
-for that case <https://github.com/VladUl287/table_change_tracker>
+This can be done using:
+
+```sql
+ALTER SYSTEM SET track_commit_timestamp = 'on';
+```
+
+Then restart the PostgreSQL service.
+
+For cases when you need to track **specific tables**, use a custom extension developed specifically for that case: [table_change_tracker](https://github.com/VladUl287/table_change_tracker).
 
 ## Timestamp calculation
 
-In case global tracking:
+Global tracking:
 
-```cs
+```sql
 select pg_last_committed_xact();
 ```
 
-In case specific table tracking used functions from extension:
+Specific Table Tracking:
 
 ```sql
 SELECT get_last_timestamp(@table_name);
 SELECT get_last_timestamps(@tables_names);
 ```
 
-When return mutliple timestamps ticks for multple tables it will be hashed with default hasher
+When returning multiple timestamp ticks for multiple tables, they will be hashed with the default hasher:
 
 ```cs
 public sealed class DefaultTrackerHasher : ITrackerHasher
@@ -40,6 +45,8 @@ public sealed class DefaultTrackerHasher : ITrackerHasher
     }
 }
 ```
+
+[snippet source](../Tracker.Core/Services/DefaultTrackerHasher.cs)
 
 ## Usage
 
@@ -104,7 +111,7 @@ public interface ISourceProvider : IDisposable
 
 [snippet source](../Tracker.Core/Services/Contracts/ISourceProvider.cs)
 
-Source Provider Id used for cases when multiple providers registered. In cases with DbContext full name will be used as Source Provider Id
+Source Provider Id is used for cases when multiple providers are registered. In cases with DbContext, the full name will be used as Source Provider Id:
 
 ```cs
 typeof(DatabaseContext).FullName
@@ -112,46 +119,8 @@ typeof(DatabaseContext).FullName
 
 [default npgsql provider implementation](../Tracker.Npgsql/Services/NpgsqlOperations.cs)
 
-For resolve provider called default implementation of [IProviderResolver](../Tracker.AspNet/Services/DefaultProviderResolver.cs)
-If resolves by provider id from keyed services in case providerId presented in options.
-If ProviderId not presented in options it will check if SourceProvider property instance presented.
-If SourceProvider not presented it will try to check if factory presented and call it if it is.
-If none of that presented it will resolve first ISourceProvider from DI container.
+- For resolving providers, the default implementation of IProviderResolver is called. It resolves by provider id from keyed services if the providerId is present in options.
+- If ProviderId is not present in options, it will check if a SourceProvider property instance is present.
+- If SourceProvider is not present, it will try to check if a factory is present and call it if it is. If none of these are present, it will resolve the first ISourceProvider from the DI container.
 
-Simplified implementation snippet
-
-```cs
-public sealed class DefaultProviderResolver : IProviderResolver
-{
-    public ISourceProvider ResolveProvider(HttpContext ctx, ImmutableGlobalOptions options, out bool shouldDispose)
-    {
-        try
-        {
-            shouldDispose = false;
-
-            if (options.ProviderId is not null)
-            {
-                return ctx.RequestServices.GetRequiredKeyedService<ISourceProvider>(options.ProviderId);
-            }
-
-            if (options.SourceProvider is not null)
-            {
-                return options.SourceProvider;
-            }
-
-            if (options.SourceProviderFactory is not null)
-            {
-                shouldDispose = true;
-                return options.SourceProviderFactory(ctx);
-            }
-
-            return GetDefaultProvider(ctx);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException(
-                $"Failed to resolve source provider. TraceId: {ctx.TraceIdentifier}", ex);
-        }
-    }
-}
-```
+[Implementation snippet](../Tracker.AspNet/Services//DefaultProviderResolver.cs)
