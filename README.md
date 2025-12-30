@@ -121,14 +121,14 @@ public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimes
 
 #### 5. Usage Examples
 
-1. Service Registration
+1. **Service Registration**
 Basic Setup
 
 ```cs
 builder.Services.AddTracker();
 ```
 
-With Global Configuration
+**With Global Configuration**
 
 ```cs
 builder.Services.AddTracker(new GlobalOptions()
@@ -144,7 +144,69 @@ builder.Services.AddTracker(options =>
 });
 ```
 
-2. Controller Action (MVC/Web API)
+For Change Tracker to function correctly, you must register a database-specific source provider. 
+This component monitors database changes and provides timestamps for ETag generation.
+
+##### Provider Documentation
+Detailed implementation guides for each database:
+* [PostgreSQL Docs](/docs/postgres.md) when using [PostgreSQL Npgsql](https://www.npgsql.org)
+* [SQL Server Docs](/docs/sqlserver.md) when using [SQL Server SqlClient](https://github.com/dotnet/SqlClient)
+
+Available Provider Implementations
+
+**PostgreSQL (Npgsql)**
+```cs
+// Register with DbContext
+builder.Services
+    .AddTracker()
+    .AddNpgsqlProvider<DatabaseContext>();
+
+// With custom provider identifier
+builder.Services
+    .AddTracker()
+    .AddNpgsqlProvider<DatabaseContext>("my-pg-provider");
+
+// Direct connection string registration
+builder.Services
+    .AddTracker()
+    .AddNpgsqlProvider(
+        "my-pg-provider", 
+        "Host=localhost;Port=5432;Database=mydb;Username=postgres;Password=secret"
+    );
+```
+
+**SQL Server (SqlClient)**
+SQL Server supports multiple tracking modes for different scenarios:
+```cs
+// Default registration with DbContext
+builder.Services
+    .AddTracker()
+    .AddSqlServerProvider<DatabaseContext>();
+
+// Different tracking modes available:
+builder.Services
+    .AddTracker()
+    .AddSqlServerProvider<DatabaseContext>(TrackingMode.DbIndexUsageStats)
+    .AddSqlServerProvider<DatabaseContext>(TrackingMode.ChangeTracking);
+
+// With custom provider ID
+builder.Services
+    .AddTracker()
+    .AddSqlServerProvider<DatabaseContext>("my-sql-provider", TrackingMode.DbIndexUsageStats);
+
+// Direct connection string registration
+builder.Services
+    .AddTracker()
+    .AddSqlServerProvider(
+        "my-sql-provider",
+        "Server=localhost;Database=mydb;User Id=sa;Password=secret;",
+        TrackingMode.ChangeTracking
+    );
+```
+
+Provider Id used to identify ISourceProvider service in case of multiple added providers.
+
+2. **Controller Action (MVC/Web API)**
 Apply caching to specific endpoints using the [Track] attribute:
 
 ```cs
@@ -156,7 +218,7 @@ public ActionResult<IEnumerable<Role>> GetAll()
 }
 ```
 
-3. Middleware Configuration
+3. **Middleware Configuration**
 Apply caching globally with request filtering:
 
 ```cs
@@ -169,7 +231,7 @@ app.UseTracker(options =>
 });
 ```
 
-4. Minimal APIs
+4. **Minimal APIs**
 Configure tracking directly on minimal API endpoints:
 
 ```cs
