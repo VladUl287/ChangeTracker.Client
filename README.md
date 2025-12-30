@@ -1,50 +1,149 @@
-## 📋 TODO
+# Change Tracker
 
-### 📚 **Documentation**
-- [ ] Write comprehensive API documentation
-- [ ] Add usage examples and code samples
-- [ ] Update README with advanced usage
+Change Tracker is inspired by [Delta Project](https://github.com/SimonCropp/Delta)
 
-### 🔧 **Core Features**
-- [ ] Make possible to register source provider not as singleton
-- [ ] **Add track attribute full options support through constructor**
-  - [ ] Design new attribute configuration interface
-  - [ ] Make factory which will create delegate for source provider creation in track attribute options
+Change Tracker is a .NET library for efficient HTTP caching using database change tracking. 
+It implements 304 Not Modified responses by generating ETags based on database timestamps,
+reducing server load while ensuring clients always receive current data.
 
-### ⚡ **Optimization**
-- [ ] Profile current performance bottlenecks
-- [ ] Implement connection pooling improvements
-- [ ] Add query result caching layer
-- [ ] Optimize memory usage in bulk operations
+## Overview
 
-### 🐘 **Npgsql Improvements**
-- [ ] **"GetLastVersions" make more effective array parsing**
-  - [ ] Benchmark current array parsing performance
-  - [ ] Implement optimized parsing algorithm
-  - [ ] Add support for PostgreSQL array types
-  - [ ] Create performance tests
-  - [ ] Consider using Npgsql's native array support
+Change Tracker monitors database changes and generates ETags that combine:
 
-### 🗄️ **SQL Server Enhancements**
-- [ ] **Make SQL command cache for specific tables or use parameterized queries**
-  - [ ] Analyze query patterns for caching opportunities
-  - [ ] Implement table-specific command cache
-  - [ ] Switch to parameterized queries where missing
-  - [ ] Add cache invalidation strategy
+Assembly write time (when your application was built)
 
-### 🧪 **Testing**
-- [ ] **Unit Tests**
-  - [ ] Increase code coverage to 90% >
-  - [ ] Add edge case scenarios
-- [ ] **Integration Tests**
-  - [ ] Test with real database instances
-  - [ ] Add multi-database compatibility tests
-  - [ ] Test concurrent operations
-- [ ] **Performance Tests**
-  - [ ] Create benchmark suite
-  - [ ] Test under load (1000+ concurrent requests)
-  - [ ] Monitor memory leaks
+Database timestamp (last data modification time)
 
-### 🔄 **Future Considerations**
-- [ ] Add support for additional database providers(Redis? + DbContext Interceptor?)
-- [ ] Implement async/await pattern throughout
+Custom suffix (optional runtime context)
+
+When a client requests data with a cached ETag, the server compares it with the current state. 
+If unchanged, it returns 304 Not Modified - the client uses its cached copy. 
+If changed, fresh data is returned with a new ETag.
+
+## Ideal Use Case
+
+Read-heavy applications where data changes less frequently than it's read
+
+APIs serving semi-static data that changes periodically
+
+Applications needing reduced server load without compromising data freshness
+
+## Documentation
+
+* [PostgreSQL Docs](/docs/postgres.md) when using [PostgreSQL Npgsql](https://www.npgsql.org)
+* [SQL Server Docs](/docs/sqlserver.md) when using [SQL Server SqlClient](https://github.com/dotnet/SqlClient)
+
+## How It Works
+
+ETags follow this format:
+
+```cs
+{AssemblyWriteTime}-{DbTimeStamp}-{Suffix}
+```
+
+### 1. Assembly Write Time
+The last modification time of your web application's assembly:
+
+<a id='snippet-AssemblyWriteTime'></a>
+
+```cs
+services.AddSingleton<IAssemblyTimestampProvider>(
+  new AssemblyTimestampProvider(Assembly.GetExecutingAssembly())
+);
+
+public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTimestampProvider
+{
+    public DateTimeOffset GetWriteTime()
+    {
+        ArgumentNullException.ThrowIfNull(assembly, nameof(assembly));
+
+        if (!File.Exists(assembly.Location))
+            throw new FileNotFoundException($"Assembly file not found at '{assembly.Location}'");
+
+        return File.GetLastWriteTimeUtc(assembly.Location);
+    }
+}
+```
+<sup><a href='' title='Snippet source file'>snippet source</a> | 
+<a href='#snippet-AssemblyWriteTime' title='Start of snippet'>anchor</a></sup>
+
+### 2. Database Timestamp
+Tracks when data was last modified. Implementation varies by database:
+
+* [SQL Server timestamp calculation](/docs/sqlserver.md#timestamp-calculation)
+* [Postgres timestamp calculation](/docs/postgres.md#timestamp-calculation)
+
+### 3. Custom Suffix (Optional)
+
+Dynamic string based on HTTP context for fine-grained cache control:
+
+<a id='snippet-Suffix'></a>
+
+```cs
+var builder = WebApplication.CreateBuilder(args);
+{
+  builder.Services
+     .AddTracker(options =>
+     {
+         options.Suffix = (httpContext) => "Suffix";
+     });
+}
+
+var app = builder.Build();
+{
+    app.UseTracker(options =>
+    {
+        options.Suffix = (httpContext) => "Suffix";
+    });
+
+    app.MapGet("route", () => { })
+      .WithTracking(options =>
+      {
+          options.Suffix = (httpContext) => "Suffix";
+      });
+}
+```
+<sup><a href='' title='Snippet source file'>snippet source</a> | <a href='#snippet-Suffix' title='Start of snippet'>anchor</a></sup>
+
+### 4. ETag Generation & Comparison
+
+Efficient comparison avoids string allocation when data is unchanged:
+
+<a id='snippet-BuildEtag'></a>
+
+```cs
+public sealed class DefaultETagProvider(IAssemblyTimestampProvider assemblyTimestampProvider) : IETagProvider
+{
+    private readonly string _assemblyTimestamp = 
+        assemblyTimestampProvider.GetWriteTime().Ticks.ToString();
+
+    public bool Compare(string etag, ulong lastTimestamp, string suffix);
+    public string Generate(ulong lastTimestamp, string suffix);
+}
+```
+<sup><a href='' title='Snippet source file'>snippet source</a> | <a href='#snippet-BuildEtag' title='Start of snippet'>anchor</a></sup>
+
+## Verifying behavior
+
+### Testing Cache Hits
+
+* Open your application in a browser
+* Open Developer Tools (F12)
+* Navigate to the Network tab
+* Refresh the page
+
+**Cached responses** will show:
+
+* Status: 304 Not Modified
+* Request Header: if-none-match (with ETag value)
+* Response Header: etag (current ETag)
+
+###  Testing Cache Misses
+
+To test the full request pipeline:
+
+* Open Developer Tools → Network tab
+* Check "Disable cache" in the toolbar
+* Refresh the page
+
+This prevents the browser from sending if-none-match, forcing a cache miss and full server execution.
