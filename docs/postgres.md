@@ -62,7 +62,7 @@ var builder = WebApplication.CreateBuilder();
 ## Source Providers
 
 All default source provider logic incapsulated in [NpgsqlOperations](../Tracker.Npgsql/Services/NpgsqlOperations.cs) class.
-Providers resolbed by [DefaultProviderResolver](../Tracker.AspNet/Services//DefaultProviderResolver.cs)
+Providers resolved by [DefaultProviderResolver](../Tracker.AspNet/Services//DefaultProviderResolver.cs)
 
 All source providers must include an `Id` field, which is used to register them as keyed dependency injection services. For multi-database support, they must also implement the ISourceProvider interface. When using `.AddNpgsqlProvider<DatabaseContext>()` without a specified `Id`, the database context's full type name will serve as the source provider `Id`:
 
@@ -70,9 +70,7 @@ All source providers must include an `Id` field, which is used to register them 
 typeof(DatabaseContext).FullName
 ```
 
-### TrackAttribute
-
-Selection a source provider for change tracking:
+### Selection a Source Provider for change tracking
 
 * **Default**: If no provider is specified, the first registered provider is used.
 
