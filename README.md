@@ -39,7 +39,7 @@ ETags follow this format:
 
 ## 🛠️ How It Works
 
-### ⏰ Assembly Write Time
+### Assembly Write Time
 
 The last modification time of your web application's assembly is handled by the [AssemblyTimestampProvider](/Tracker.Core/Services/AssemblyTimestampProvider.cs), which implements the [IAssemblyTimestampProvider](/Tracker.Core/Services/Contracts/IAssemblyTimestampProvider.cs) interface.
 
@@ -58,14 +58,14 @@ public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTime
 }
 ```
 
-### 🗄️ Database Timestamp
+### Database Timestamp
 
 Tracks when data was last modified. Implementation varies by database:
 
 * [PostgresSQL](/docs/postgres.md#timestamp-calculation) timestamp calculation
 * [SQL Server](/docs/sqlserver.md#timestamp-calculation) timestamp calculation
 
-### 🎯 Custom Suffix (Optional)
+### Custom Suffix (Optional)
 
 Dynamic string based on HTTP context for fine-grained cache control:
 
@@ -94,7 +94,7 @@ var app = builder.Build();
 }
 ```
 
-### ⚙️ ETag Generation & Comparison
+### ETag Generation & Comparison
 
 For comparison and generation of ETags, see the implementation in [DefaultETagProvider](/Tracker.Core/Services/DefaultETagProvider.cs) of the [IETagProvider](/Tracker.Core/Services/Contracts/IETagProvider.cs) interface.
 
@@ -153,7 +153,7 @@ app.UseTracker(options =>
 });
 ```
 
-#### Minimal APIs
+### Minimal APIs
 
 Configure tracking directly on minimal API endpoints:
 
