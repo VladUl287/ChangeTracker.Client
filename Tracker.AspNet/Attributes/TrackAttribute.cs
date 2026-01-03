@@ -13,7 +13,12 @@ public sealed class TrackAttribute(
     string? cacheControl = null) : TrackAttributeBase
 {
     private ImmutableGlobalOptions? _actionOptions;
+
+#if NET9_0_OR_GREATER
     private readonly Lock _lock = new();
+#else
+    private readonly object _lock = new();
+#endif
 
     protected internal override ImmutableGlobalOptions GetOptions(ActionExecutingContext ctx)
     {

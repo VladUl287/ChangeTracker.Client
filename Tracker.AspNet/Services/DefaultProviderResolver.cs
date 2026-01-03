@@ -12,7 +12,11 @@ namespace Tracker.AspNet.Services;
 public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> logger) : IProviderResolver
 {
     private static string? _defaultProviderId;
+#if NET9_0_OR_GREATER
     private static readonly Lock _lock = new();
+#else
+    private static readonly object _lock = new();
+#endif
 
     public ISourceProvider ResolveProvider(HttpContext ctx, ImmutableGlobalOptions options, out bool shouldDispose)
     {
