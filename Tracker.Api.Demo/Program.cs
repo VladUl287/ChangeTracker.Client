@@ -1,3 +1,4 @@
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Api.Demo.Database;
 using Tracker.AspNet.Extensions;
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddControllers();
 
     builder.Services.AddOpenApi();
+
+    builder.Services.AddFastEndpoints();
 
     builder.Services
         .AddTracker()
@@ -37,6 +40,7 @@ var app = builder.Build();
 
     app.UseAuthorization();
 
+    app.UseFastEndpoints();
     app.MapControllers();
 }
 app.Run();
