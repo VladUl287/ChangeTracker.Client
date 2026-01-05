@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Tracker.AspNet.Attributes;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
@@ -37,22 +35,17 @@ public sealed class DefaultTrackerProcessor : ITrackerProcessor
     {
         return _actionsOptions.GetOrAdd(endpointKey, (key, ctx) =>
         {
-            var scopeFactory = ctx.Resolve<IServiceScopeFactory>();
-
-            using var scope = scopeFactory.CreateScope();
-            var options = scope.Resolve<ImmutableGlobalOptions>();
-
             var attribute = GetAttribute(ctx, key);
-            return options with
-            {
-                Tables = ResolveTables(attribute?.Tables, options),
-                ProviderId = attribute?.ProviderId ?? options.ProviderId,
-                CacheControl = attribute?.CacheControl ?? options.CacheControl,
-            };
+            if (attribute is not null)
+                return attribute.GetOptions(ctx);
+
+            var scopeFactory = ctx.Resolve<IServiceScopeFactory>();
+            using var scope = scopeFactory.CreateScope();
+            return scope.Resolve<ImmutableGlobalOptions>();
         }, context);
     }
 
-    private static TrackAttribute? GetAttribute(
+    private static TrackAttributeBase? GetAttribute(
         HttpContext context,
         string endpointKey)
     {
@@ -63,16 +56,8 @@ public sealed class DefaultTrackerProcessor : ITrackerProcessor
         if (definitions is null || definitions.Count == 0)
             throw new InvalidOperationException($"{nameof(EndpointDefinition)} not found for endpoint: {endpointKey}");
 
-        return definitions[0].EndpointType.GetCustomAttribute<TrackAttribute>();
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, ImmutableGlobalOptions options)
-    {
-        if (tables is null || tables.Count == 0)
-            return options.Tables;
-
-        return new HashSet<string>([.. tables, .. options.Tables])
-            .ToImmutableArray();
+        return definitions[0]
+            .EndpointType
+            .GetCustomAttribute<TrackAttributeBase>(true);
     }
 }
