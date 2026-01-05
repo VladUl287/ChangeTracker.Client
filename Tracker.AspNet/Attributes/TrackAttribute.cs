@@ -6,7 +6,7 @@ using Tracker.AspNet.Models;
 
 namespace Tracker.AspNet.Attributes;
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
 public sealed class TrackAttribute(
     string[]? tables = null,
     string? providerId = null,
@@ -19,6 +19,10 @@ public sealed class TrackAttribute(
 #else
     private readonly object _lock = new();
 #endif
+
+    public IReadOnlyList<string>? Tables => tables;
+    public string? ProviderId => providerId;
+    public string? CacheControl => cacheControl;
 
     protected internal override ImmutableGlobalOptions GetOptions(ActionExecutingContext ctx)
     {

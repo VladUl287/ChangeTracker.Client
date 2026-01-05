@@ -5,9 +5,9 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Tracker.AspNet.Attributes;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
-using Tracker.FastEndpoints.Attributes;
 using Tracker.FastEndpoints.Services.Contracts;
 
 namespace Tracker.FastEndpoints.Services;
@@ -52,7 +52,7 @@ public sealed class DefaultTrackerProcessor : ITrackerProcessor
         }, context);
     }
 
-    private static TrackerOptionsAttribute? GetAttribute(
+    private static TrackAttribute? GetAttribute(
         HttpContext context,
         string endpointKey)
     {
@@ -63,9 +63,8 @@ public sealed class DefaultTrackerProcessor : ITrackerProcessor
         if (definitions is null || definitions.Count == 0)
             throw new InvalidOperationException($"{nameof(EndpointDefinition)} not found for endpoint: {endpointKey}");
 
-        return definitions[0].EndpointType.GetCustomAttribute<TrackerOptionsAttribute>();
+        return definitions[0].EndpointType.GetCustomAttribute<TrackAttribute>();
     }
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, ImmutableGlobalOptions options)

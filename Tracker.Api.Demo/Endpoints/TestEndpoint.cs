@@ -1,10 +1,10 @@
 ﻿using FastEndpoints;
 using Tracker.FastEndpoints;
-using Tracker.FastEndpoints.Attributes;
+using Tracker.AspNet.Attributes;
 
 namespace Tracker.Api.Demo.Endpoints;
 
-[TrackerOptions(tables: ["roles"], cacheControl: "max-age=60, stale-while-revalidate=60, stale-if-error=86400")]
+[Track(tables: ["roles"], cacheControl: "max-age=60, stale-while-revalidate=60, stale-if-error=86400")]
 public class MyEndpoint : Endpoint<EmptyRequest>
 {
     public override void Configure()
