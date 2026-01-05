@@ -1,17 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<PackageId>ChangeTracker.FastEndpoints</PackageId>
 
-  <ItemGroup>
-    <PackageReference Include="FastEndpoints" Version="7.1.1" />
-  </ItemGroup>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Tracker.AspNet\Tracker.AspNet.csproj" />
-  </ItemGroup>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/VladUl287/ChangeTracker.Client</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/VladUl287/ChangeTracker.Client</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="FastEndpoints" Version="7.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Tracker.AspNet\Tracker.AspNet.csproj" />
+	</ItemGroup>
 
 </Project>
