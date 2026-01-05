@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Tracker.AspNet.Models;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
-using Tracker.AspNet.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Tracker.AspNet.Attributes;
 
@@ -24,7 +24,7 @@ public class TrackAttribute(
     public string? ProviderId => providerId;
     public string? CacheControl => cacheControl;
 
-    protected internal override ImmutableGlobalOptions GetOptions(ActionExecutingContext ctx)
+    public override ImmutableGlobalOptions GetOptions(HttpContext ctx)
     {
         if (_actionOptions is not null)
             return _actionOptions;
@@ -34,7 +34,7 @@ public class TrackAttribute(
             if (_actionOptions is not null)
                 return _actionOptions;
 
-            var scopeFactory = ctx.HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>();
+            var scopeFactory = ctx.RequestServices.GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
 
             var serviceProvider = scope.ServiceProvider;
@@ -52,6 +52,12 @@ public class TrackAttribute(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, ImmutableGlobalOptions options) =>
-        new HashSet<string>(tables ?? [.. options.Tables]).ToImmutableArray();
+    private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, ImmutableGlobalOptions options)
+    {
+        if (tables is null || tables.Count == 0)
+            return options.Tables;
+
+        return new HashSet<string>([.. tables, .. options.Tables])
+            .ToImmutableArray();
+    }
 }

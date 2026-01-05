@@ -11,7 +11,7 @@ public abstract class TrackAttributeBase : Attribute, IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext execCtx, ActionExecutionDelegate next)
     {
-        var options = GetOptions(execCtx);
+        var options = GetOptions(execCtx.HttpContext);
 
         if (RequestValid(execCtx.HttpContext, options) && await NotModified(execCtx.HttpContext, options))
             return;
@@ -31,5 +31,5 @@ public abstract class TrackAttributeBase : Attribute, IAsyncActionFilter
             .GetRequiredService<IRequestHandler>()
             .HandleRequest(httpCtx, options);
 
-    protected internal abstract ImmutableGlobalOptions GetOptions(ActionExecutingContext execContext);
+    public abstract ImmutableGlobalOptions GetOptions(HttpContext execContext);
 }

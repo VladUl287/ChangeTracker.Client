@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
@@ -16,7 +16,7 @@ public class TrackAttribute<TContext>(
 {
     public IReadOnlyList<Type>? Entities => entities;
 
-    protected internal override ImmutableGlobalOptions GetOptions(ActionExecutingContext ctx)
+    public override ImmutableGlobalOptions GetOptions(HttpContext ctx)
     {
         if (_actionOptions is not null)
             return _actionOptions;
@@ -26,18 +26,16 @@ public class TrackAttribute<TContext>(
             if (_actionOptions is not null)
                 return _actionOptions;
 
-            var scopeFactory = ctx.HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>();
-            using var scope = scopeFactory.CreateScope();
+            var scopeFactory = ctx.RequestServices.GetRequiredService<IServiceScopeFactory>();
 
-            var serviceProvider = scope.ServiceProvider;
-            var tableNameResolver = serviceProvider.GetRequiredService<ITableNameResolver>();
-            var options = serviceProvider.GetRequiredService<ImmutableGlobalOptions>();
+            using var scope = scopeFactory.CreateScope();
+            var options = scope.ServiceProvider.GetRequiredService<ImmutableGlobalOptions>();
 
             _actionOptions = options with
             {
-                ProviderId = ProviderId ?? typeof(TContext).FullName ?? options.ProviderId,
                 CacheControl = CacheControl ?? options.CacheControl,
-                Tables = ResolveTables(Tables, entities, serviceProvider, tableNameResolver, options),
+                Tables = ResolveTables(Tables, Entities, scope.ServiceProvider, options),
+                ProviderId = ProviderId ?? typeof(TContext).FullName ?? options.ProviderId,
             };
 
             return _actionOptions;
@@ -45,13 +43,14 @@ public class TrackAttribute<TContext>(
     }
 
     private static ImmutableArray<string> ResolveTables(
-        IReadOnlyList<string>? tables, Type[]? entities, IServiceProvider services, ITableNameResolver tableNameResolver, ImmutableGlobalOptions options)
+        IReadOnlyList<string>? tables, IReadOnlyList<Type>? entities, IServiceProvider services, ImmutableGlobalOptions options)
     {
         var tablesNames = new HashSet<string>(tables ?? []);
 
-        if (entities is { Length: > 0 })
+        if (entities is { Count: > 0 })
         {
             var dbContext = services.GetRequiredService<TContext>();
+            var tableNameResolver = services.GetRequiredService<ITableNameResolver>();
             foreach (var tableName in tableNameResolver.GetTablesNames(dbContext, entities))
                 tablesNames.Add(tableName);
         }

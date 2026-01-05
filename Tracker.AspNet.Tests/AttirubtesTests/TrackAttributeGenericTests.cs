@@ -99,7 +99,7 @@ public class TrackAttributeGenericTests
             .Returns(["Products", "Categories"]);
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Equal("no-store", result.CacheControl);
@@ -127,7 +127,7 @@ public class TrackAttributeGenericTests
             .Returns(["Users", "Orders"]);
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Contains("Users", result.Tables);
@@ -145,7 +145,7 @@ public class TrackAttributeGenericTests
         SetupServiceProvider();
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Equal(3, result.Tables.Length); // Users, Products, Categories
@@ -163,9 +163,9 @@ public class TrackAttributeGenericTests
         SetupServiceProvider();
 
         // Act - Call multiple times
-        var result1 = attribute.GetOptions(_actionExecutingContext);
-        var result2 = attribute.GetOptions(_actionExecutingContext);
-        var result3 = attribute.GetOptions(_actionExecutingContext);
+        var result1 = attribute.GetOptions(_httpContext);
+        var result2 = attribute.GetOptions(_httpContext);
+        var result3 = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Same(result1, result2);
@@ -185,7 +185,7 @@ public class TrackAttributeGenericTests
             .Throws(new InvalidOperationException("Test exception"));
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => attribute.GetOptions(_actionExecutingContext));
+        Assert.Throws<InvalidOperationException>(() => attribute.GetOptions(_httpContext));
 
         // Verify scope is disposed even on exception
         _serviceScopeMock.Verify(x => x.Dispose(), Times.Never); // Never created due to exception
@@ -200,7 +200,7 @@ public class TrackAttributeGenericTests
         SetupServiceProvider();
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Empty(result.Tables);
@@ -215,7 +215,7 @@ public class TrackAttributeGenericTests
         SetupServiceProvider();
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Empty(result.Tables);

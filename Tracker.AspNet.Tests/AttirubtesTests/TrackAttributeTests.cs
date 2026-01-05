@@ -109,7 +109,7 @@ public class TrackAttributeTests
             });
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Equal("no-store", result.CacheControl);
@@ -139,9 +139,9 @@ public class TrackAttributeTests
             .Returns(_sourceProvider.Object);
 
         // Act
-        var result1 = attribute.GetOptions(_actionExecutingContext);
-        var result2 = attribute.GetOptions(_actionExecutingContext);
-        var result3 = attribute.GetOptions(_actionExecutingContext);
+        var result1 = attribute.GetOptions(_httpContext);
+        var result2 = attribute.GetOptions(_httpContext);
+        var result3 = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Equal(result1, result2);
@@ -168,7 +168,7 @@ public class TrackAttributeTests
             .Returns(_sourceProvider.Object);
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Contains("products", result.Tables);
@@ -192,7 +192,7 @@ public class TrackAttributeTests
            });
 
         // Act
-        var result = attribute.GetOptions(_actionExecutingContext);
+        var result = attribute.GetOptions(_httpContext);
 
         // Assert
         Assert.Equal(_defaultOptions.Tables, result.Tables);
@@ -218,7 +218,7 @@ public class TrackAttributeTests
             tasks.Add(Task.Run(() =>
             {
                 barrier.SignalAndWait();
-                results.Add(attribute.GetOptions(_actionExecutingContext));
+                results.Add(attribute.GetOptions(_httpContext));
             }));
         }
 
