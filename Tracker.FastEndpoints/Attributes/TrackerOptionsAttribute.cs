@@ -1,7 +1,7 @@
 ﻿namespace Tracker.FastEndpoints.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-public sealed class TrackPreProcessorAttribute(
+public sealed class TrackerOptionsAttribute(
     string[]? tables = null,
     string? providerId = null,
     string? cacheControl = null) : Attribute

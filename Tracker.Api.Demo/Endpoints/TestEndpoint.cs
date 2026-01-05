@@ -4,7 +4,7 @@ using Tracker.FastEndpoints.Attributes;
 
 namespace Tracker.Api.Demo.Endpoints;
 
-[TrackPreProcessor(cacheControl: "max-age=60, stale-while-revalidate=60, stale-if-error=86400")]
+[TrackerOptions(tables: ["roles"], cacheControl: "max-age=60, stale-while-revalidate=60, stale-if-error=86400")]
 public class MyEndpoint : Endpoint<EmptyRequest>
 {
     public override void Configure()
@@ -14,8 +14,8 @@ public class MyEndpoint : Endpoint<EmptyRequest>
         PreProcessor<TrackerPreProcessor<EmptyRequest>>();
     }
 
-    public override Task HandleAsync(EmptyRequest req, CancellationToken ct)
+    public override async Task HandleAsync(EmptyRequest req, CancellationToken ct)
     {
-        return base.HandleAsync(req, ct);
+        await Send.OkAsync(new { Success = true }, ct);
     }
 }
