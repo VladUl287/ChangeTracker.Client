@@ -37,23 +37,22 @@ public sealed class DefaultTrackerProcessor : ITrackerProcessor
     {
         return _actionsOptions.GetOrAdd(endpointKey, (key, ctx) =>
         {
-            var attribute = GetAttribute(ctx, key);
-
             var scopeFactory = ctx.Resolve<IServiceScopeFactory>();
 
             using var scope = scopeFactory.CreateScope();
             var options = scope.Resolve<ImmutableGlobalOptions>();
 
+            var attribute = GetAttribute(ctx, key);
             return options with
             {
-                Tables = ResolveTables(attribute.Tables, options),
-                ProviderId = attribute.ProviderId ?? options.ProviderId,
-                CacheControl = attribute.CacheControl ?? options.CacheControl,
+                Tables = ResolveTables(attribute?.Tables, options),
+                ProviderId = attribute?.ProviderId ?? options.ProviderId,
+                CacheControl = attribute?.CacheControl ?? options.CacheControl,
             };
         }, context);
     }
 
-    private static TrackerOptionsAttribute GetAttribute(
+    private static TrackerOptionsAttribute? GetAttribute(
         HttpContext context,
         string endpointKey)
     {
@@ -64,8 +63,7 @@ public sealed class DefaultTrackerProcessor : ITrackerProcessor
         if (definitions is null || definitions.Count == 0)
             throw new InvalidOperationException($"{nameof(EndpointDefinition)} not found for endpoint: {endpointKey}");
 
-        return definitions[0].EndpointType.GetCustomAttribute<TrackerOptionsAttribute>() ??
-            throw new InvalidOperationException($"{nameof(TrackerOptionsAttribute)} not found on endpoint: {endpointKey}");
+        return definitions[0].EndpointType.GetCustomAttribute<TrackerOptionsAttribute>();
     }
 
 
