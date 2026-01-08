@@ -27,7 +27,7 @@ var builder = WebApplication.CreateBuilder();
 }
 ```
 
-[snippet source](../Tracker.Npgsql/Extensions/ServiceCollectionExtensions.cs)
+[snippet source](../Tracker.SqlServer/Extensions/ServiceCollectionExtensions.cs)
 
 ## Source Providers
 
