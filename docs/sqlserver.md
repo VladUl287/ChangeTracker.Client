@@ -92,7 +92,7 @@ app.MapGroup("roles")
 
 ```cs
 [Track(providerId: "my-sql-provider", tables: ["roles"])]
-[Track<DatabaseContext>(**: "my-sql-provider", entities: [typeof(Role)])]
+[Track<DatabaseContext>(providerId: "my-sql-provider", entities: [typeof(Role)])]
 
 //middlewares
 app.UseTracker<DatabaseContext>((options) =>
