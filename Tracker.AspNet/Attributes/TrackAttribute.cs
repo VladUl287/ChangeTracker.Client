@@ -1,6 +1,5 @@
 ﻿using Tracker.AspNet.Models;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,7 +41,7 @@ public class TrackAttribute(
             _actionOptions = options with
             {
                 ProviderId = ProviderId ?? options.ProviderId,
-                Tables = ResolveTables(Tables, options),
+                Tables = CombineTables(Tables, options),
                 CacheControl = CacheControl ?? options.CacheControl,
             };
 
@@ -51,12 +50,11 @@ public class TrackAttribute(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, TrackOptionsSnapshot options)
+    private static string[] CombineTables(IReadOnlyList<string>? tables, TrackOptionsSnapshot options)
     {
         if (tables is null || tables.Count == 0)
             return options.Tables;
 
-        return new HashSet<string>([.. tables, .. options.Tables])
-            .ToImmutableArray();
+        return new HashSet<string>([.. tables, .. options.Tables]).ToArray();
     }
 }

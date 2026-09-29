@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Immutable;
 using Tracker.AspNet.Models;
 using Tracker.Core.Services.Contracts;
 
@@ -42,7 +41,7 @@ public class TrackAttribute<TContext>(
         }
     }
 
-    private static ImmutableArray<string> ResolveTables(
+    private static string[] ResolveTables(
         IReadOnlyList<string>? tables, IReadOnlyList<Type>? entities, IServiceProvider services, TrackOptionsSnapshot options)
     {
         var tablesNames = new HashSet<string>(tables ?? []);

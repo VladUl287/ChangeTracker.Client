@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Collections.Immutable;
 using Tracker.AspNet.Utils;
 using Tracker.Core.Services.Contracts;
 
@@ -30,7 +29,7 @@ public sealed record TrackOptionsSnapshot
 
     public Func<HttpContext, bool> Filter { get; init; } = (_) => true;
 
-    public ImmutableArray<string> Tables { get; init; } = [];
+    public string[] Tables { get; init; } = [];
 
     public string CacheControl { get; init; } = string.Empty;
 
