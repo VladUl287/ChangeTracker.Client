@@ -74,7 +74,7 @@ public sealed class DefaultRequestHandler(
         {
             0 => (ulong)await sourceOperations.GetVersion(token),
             1 => (ulong)await sourceOperations.GetVersion(options.Tables[0], token),
-            _ => (ulong)await sourceOperations.GetLatestVersion([.. options.Tables], token),
+            _ => (ulong)await sourceOperations.GetLatestVersion(options.Tables, token),
         };
     }
 }
