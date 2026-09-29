@@ -17,10 +17,9 @@ public sealed class DefaultRequestHandler(
 
         var reqId = new RequestId(ctx);
 
-        logger.LogRequestHandleStarted(reqId, ctx.Request.Path);
+        logger.LogRequestHandleStarted(reqId);
 
         var provider = providerResolver.ResolveProvider(ctx, options, out var canDispose);
-
         try
         {
             var lastTimestamp = await GetLastVersionAsync(options, provider, token);
@@ -68,7 +67,8 @@ public sealed class DefaultRequestHandler(
         return true;
     }
 
-    private static async ValueTask<ulong> GetLastVersionAsync(ImmutableGlobalOptions options, ISourceProvider sourceOperations, CancellationToken token)
+    private static async ValueTask<ulong> GetLastVersionAsync(
+        ImmutableGlobalOptions options, ISourceProvider sourceOperations, CancellationToken token)
     {
         return options.Tables.Length switch
         {

@@ -4,8 +4,8 @@ namespace Tracker.AspNet.Logging;
 
 public static partial class RequestHandlerLogging
 {
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Request handler started. TraceId: {TraceId}. Path - {Path}")]
-    public static partial void LogRequestHandleStarted(this ILogger logger, RequestId traceId, string path);
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Request handler started. TraceId: {TraceId}")]
+    public static partial void LogRequestHandleStarted(this ILogger logger, RequestId traceId);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Request handler finished - TraceId: {TraceId}")]
     public static partial void LogRequestHandleFinished(this ILogger logger, RequestId traceId);
