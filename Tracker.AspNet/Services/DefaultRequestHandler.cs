@@ -70,7 +70,6 @@ public sealed class DefaultRequestHandler(
     private static async ValueTask<ulong> GetLastVersionAsync(
         TrackOptionsSnapshot options, ISourceProvider sourceOperations, CancellationToken token)
     {
-        return (ulong)DateTime.UtcNow.Ticks;
         return options.Tables.Length switch
         {
             0 => (ulong)await sourceOperations.GetVersion(token),
