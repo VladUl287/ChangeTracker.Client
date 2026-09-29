@@ -7,12 +7,16 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<PackageVersion>$(Version)</PackageVersion>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/VladUl287/ChangeTracker.Client</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/VladUl287/ChangeTracker.Client</RepositoryUrl>
+
+		<Title>ChangeTracker — Efficient HTTP Caching via Database Change Tracking.</Title>
+		<Description>Library for efficient HTTP caching that implements 304 Not Modified responses by generating ETags from database change tracking.</Description>
+		<PackageTags>http-caching, etag, 304-not-modified, database-change-tracking, caching, aspnetcore, aspnet, dotnet, minimal-api, middleware, controller, npgsql, postgresql, performance, web-api, nuget, rest-api, conditional-requests, if-none-match</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
