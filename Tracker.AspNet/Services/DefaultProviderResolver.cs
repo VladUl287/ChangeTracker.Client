@@ -18,7 +18,7 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
     private static readonly object _lock = new();
 #endif
 
-    public ISourceProvider ResolveProvider(HttpContext ctx, ImmutableGlobalOptions options, out bool shouldDispose)
+    public ISourceProvider ResolveProvider(HttpContext ctx, ImmutableGlobalOptions options)
     {
         ArgumentNullException.ThrowIfNull(ctx, nameof(ctx));
         ArgumentNullException.ThrowIfNull(options, nameof(options));
@@ -26,8 +26,6 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
         var traceId = new TraceId(ctx);
         try
         {
-            shouldDispose = false;
-
             if (options.ProviderId is not null)
             {
                 logger.LogResolvingKeyedProvider(options.ProviderId, traceId);
@@ -43,7 +41,6 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
             if (options.SourceProviderFactory is not null)
             {
                 logger.LogCreatingProviderViaFactory(traceId);
-                shouldDispose = true;
                 return options.SourceProviderFactory(ctx);
             }
 

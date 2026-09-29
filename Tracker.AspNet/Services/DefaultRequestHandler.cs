@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.Buffers;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
@@ -17,13 +16,14 @@ public sealed class DefaultRequestHandler(
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
         var traceId = new TraceId(ctx);
+
         logger.LogRequestHandleStarted(traceId, ctx.Request.Path);
 
-        var operationsProvider = providerResolver.ResolveProvider(ctx, options, out var shouldDispose);
-        logger.LogSourceProviderResolved(traceId, operationsProvider.Id);
+        var provider = providerResolver.ResolveProvider(ctx, options);
+
         try
         {
-            var lastTimestamp = await GetLastVersionAsync(options, operationsProvider, token);
+            var lastTimestamp = await GetLastVersionAsync(options, provider, token);
 
             var notModified = NotModified(ctx, options, traceId, lastTimestamp, out var suffix);
             if (notModified)
@@ -41,8 +41,8 @@ public sealed class DefaultRequestHandler(
         }
         finally
         {
-            if (shouldDispose)
-                operationsProvider.Dispose();
+            if (provider is IDisposable d)
+                d.Dispose();
 
             logger.LogRequestHandleFinished(traceId);
         }
@@ -68,21 +68,13 @@ public sealed class DefaultRequestHandler(
         return true;
     }
 
-    private async ValueTask<ulong> GetLastVersionAsync(ImmutableGlobalOptions options, ISourceProvider sourceOperations, CancellationToken token)
+    private static async ValueTask<ulong> GetLastVersionAsync(ImmutableGlobalOptions options, ISourceProvider sourceOperations, CancellationToken token)
     {
-        switch (options.Tables.Length)
+        return options.Tables.Length switch
         {
-            case 0:
-                return (ulong)await sourceOperations.GetVersion(token);
-            case 1:
-                var tableName = options.Tables[0];
-                return (ulong)await sourceOperations.GetVersion(tableName, token);
-            default:
-                var timestamps = ArrayPool<long>.Shared.Rent(options.Tables.Length);
-                await sourceOperations.GetLastVersions(options.Tables, timestamps, token);
-                var hash = hasher.Hash(timestamps.AsSpan(0, options.Tables.Length));
-                ArrayPool<long>.Shared.Return(timestamps);
-                return hash;
-        }
+            0 => (ulong)await sourceOperations.GetVersion(token),
+            1 => (ulong)await sourceOperations.GetVersion(options.Tables[0], token),
+            _ => (ulong)await sourceOperations.GetLatestVersion([.. options.Tables], token),
+        };
     }
 }

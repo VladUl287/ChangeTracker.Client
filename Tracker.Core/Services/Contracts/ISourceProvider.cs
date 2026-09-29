@@ -1,6 +1,6 @@
 ﻿namespace Tracker.Core.Services.Contracts;
 
-public interface ISourceProvider : IDisposable
+public interface ISourceProvider
 {
     string Id { get; }
 
@@ -8,7 +8,7 @@ public interface ISourceProvider : IDisposable
 
     ValueTask<long> GetVersion(string key, CancellationToken token = default);
 
-    ValueTask<long> GetLastVersion(string[] keys, CancellationToken token = default);
+    ValueTask<long> GetLatestVersion(string[] keys, CancellationToken token = default);
 
     ValueTask<bool> SetVersion(string key, long value, CancellationToken token = default);
 
