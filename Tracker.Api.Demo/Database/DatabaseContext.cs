@@ -19,6 +19,9 @@ public sealed class DatabaseContext(DbContextOptions<DatabaseContext> options) :
                 builder.HasKey(c => c.Id)
                     .HasName("id");
 
+                builder.Property(c => c.Id)
+                    .HasColumnName("id");
+
                 builder.Property(c => c.Name)
                     .HasColumnName("name");
 

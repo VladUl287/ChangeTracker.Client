@@ -11,7 +11,7 @@ namespace Tracker.Api.Demo.Controllers;
 public class RolesController(DatabaseContext dbContext) : ControllerBase
 {
     [HttpGet]
-    [Track(["Roles"], cacheControl: "max-age=60, stale-while-revalidate=60, stale-if-error=86400")]
+    [Track(["roles"])]
     public ActionResult<IEnumerable<Role>> GetAll()
     {
         return dbContext.Roles.ToList();
@@ -34,7 +34,7 @@ public class RolesController(DatabaseContext dbContext) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(int id)
     {
         await dbContext.Roles
             .Where(c => c.Id == id)
