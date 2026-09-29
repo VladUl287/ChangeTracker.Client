@@ -1,8 +1,6 @@
-using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Tracker.Api.Demo.Database;
 using Tracker.AspNet.Extensions;
-using Tracker.FastEndpoints.Extensions;
 using Tracker.Npgsql.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,11 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddOpenApi();
 
-    builder.Services.AddFastEndpoints();
-
     builder.Services
         .AddTracker()
-        .AddTrackerFastEndpoints()
         .AddNpgsqlProvider<DatabaseContext>();
 
     builder.Services.AddDbContext<DatabaseContext>(options =>
@@ -42,7 +37,6 @@ var app = builder.Build();
 
     app.UseAuthorization();
 
-    app.UseFastEndpoints();
     app.MapControllers();
 }
 app.Run();

@@ -3,10 +3,6 @@
 [![NuGet Status](https://img.shields.io/nuget/v/ChangeTracker.Core.svg?label=ChangeTracker.Core)](https://www.nuget.org/packages/ChangeTracker.Core/)
 [![NuGet Status](https://img.shields.io/nuget/v/ChangeTracker.AspNet.svg?label=ChangeTracker.AspNet)](https://www.nuget.org/packages/ChangeTracker.AspNet/)
 [![NuGet Status](https://img.shields.io/nuget/v/ChangeTracker.Npgsql.svg?label=ChangeTracker.Npgsql)](https://www.nuget.org/packages/ChangeTracker.Npgsql/)
-[![NuGet Status](https://img.shields.io/nuget/v/ChangeTracker.SqlServer.svg?label=ChangeTracker.SqlServer)](https://www.nuget.org/packages/ChangeTracker.SqlServer/)
-[![NuGet Status](https://img.shields.io/nuget/v/ChangeTracker.FastEndpoints.svg?label=ChangeTracker.FastEndpoints)](https://www.nuget.org/packages/ChangeTracker.FastEndpoints/)
-
-ChangeTracker is inspired by [Delta Project](https://github.com/SimonCropp/Delta)
 
 Change Tracker is a library for efficient HTTP caching using database change tracking.
 It implements [**304 Not Modified**](https://www.keycdn.com/support/304-not-modified) responses
@@ -41,7 +37,6 @@ ETags follow this format:
 ## 📚 Documentation
 
 * [PostgreSQL](/docs/postgres.md) docs
-* [SQL Server](/docs/sqlserver.md) docs
 
 ## 🛠️ How It Works
 
@@ -69,7 +64,6 @@ public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTime
 Tracks when data was last modified. Implementation varies by database:
 
 * [PostgresSQL](/docs/postgres.md#timestamp-calculation) timestamp calculation
-* [SQL Server](/docs/sqlserver.md#timestamp-calculation) timestamp calculation
 
 ### Custom Suffix (Optional)
 
@@ -130,7 +124,6 @@ This component monitors database changes and provides timestamps for ETag genera
 Detailed implementation guides for each database:
 
 * [PostgreSQL](/docs/postgres.md) docs
-* [SQL Server](/docs/sqlserver.md) docs
 
 ## 🔧 Usage
 
