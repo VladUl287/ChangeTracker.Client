@@ -9,7 +9,7 @@ It implements [**304 Not Modified**](https://www.keycdn.com/support/304-not-modi
 by generating ETags based on database timestamps, reducing server load while ensuring
 clients always receive current data.
 
-## 📋 Overview
+## Overview
 
 ChangeTracker monitors database changes and generates ETags that combine:
 
@@ -28,173 +28,60 @@ ETags follow this format:
 {AssemblyWriteTime}-{DbTimeStamp}-{Suffix}
 ```
 
-## 💡 Ideal Use Case
+## Ideal Use Case
 
 * Read-heavy applications where data changes less frequently than it's read
 * APIs serving semi-static data that changes periodically
 * Applications needing reduced server load without compromising data freshness
 
-## 📚 Documentation
+## Quick start
+
+#### 1. Enable table tracking
 
 * [PostgreSQL](/docs/postgres.md) docs
 
-## 🛠️ How It Works
-
-### Assembly Write Time
-
-The last modification time of your web application's assembly is handled by the [AssemblyTimestampProvider](/Tracker.Core/Services/AssemblyTimestampProvider.cs), which implements the [IAssemblyTimestampProvider](/Tracker.Core/Services/Contracts/IAssemblyTimestampProvider.cs) interface.
+#### 2. Configure services
 
 ```cs
-public sealed class AssemblyTimestampProvider(Assembly assembly) : IAssemblyTimestampProvider
-{
-    public DateTimeOffset GetWriteTime()
-    {
-        ArgumentNullException.ThrowIfNull(assembly, nameof(assembly));
-
-        if (!File.Exists(assembly.Location))
-            throw new FileNotFoundException($"Assembly file not found at '{assembly.Location}'");
-
-        return File.GetLastWriteTimeUtc(assembly.Location);
-    }
-}
+builder.Services
+    .AddTracker()
+    .AddNpgsqlProvider<DatabaseContext>();
 ```
 
-### Database Timestamp
+#### 3. Configure endpoint
 
-Tracks when data was last modified. Implementation varies by database:
-
-* [PostgresSQL](/docs/postgres.md#timestamp-calculation) timestamp calculation
-
-### Custom Suffix (Optional)
-
-Dynamic string based on HTTP context for fine-grained cache control:
-
-```cs
-var builder = WebApplication.CreateBuilder(args);
-{
-  builder.Services
-     .AddTracker(options =>
-     {
-         options.Suffix = (httpContext) => "Suffix";
-     });
-}
-
-var app = builder.Build();
-{
-    app.UseTracker(options =>
-    {
-        options.Suffix = (httpContext) => "Suffix";
-    });
-
-    app.MapGet("route", () => { })
-      .WithTracking(options =>
-      {
-          options.Suffix = (httpContext) => "Suffix";
-      });
-}
-```
-
-### ETag Generation & Comparison
-
-For comparison and generation of ETags, see the implementation in [DefaultETagProvider](/Tracker.Core/Services/DefaultETagProvider.cs) of the [IETagProvider](/Tracker.Core/Services/Contracts/IETagProvider.cs) interface.
-
-### Chanage Tracker Client Registration
-
-Tracker services can be registered using the [AddTracker](/Tracker.AspNet/Extensions/ServiceCollectionExtensions.cs) extension method, which accepts a [GlobalOptions](/Tracker.AspNet/Models/GlobalOptions.cs) configuration object.
-
-```cs
-builder.Services.AddTracker();
-
-builder.Services.AddTracker(new GlobalOptions()
-{
-    CacheControl = "max-age=60, stale-while-revalidate=60, stale-if-error=86400",
-});
-
-builder.Services.AddTracker(options =>
-{
-    options.Filter = (httpContext) => true;
-});
-```
-
-### Provider Documentation
-
-For ChangeTracker to **function correctly**, you must register a database-specific source provider.
-This component monitors database changes and provides timestamps for ETag generation.
-
-Detailed implementation guides for each database:
-
-* [PostgreSQL](/docs/postgres.md) docs
-
-## 🔧 Usage
-
-### Controller Action (MVC/Web API)
-
-Apply caching to specific endpoints using the [Track] attribute:
+**Controller action:**
 
 ```cs
 [HttpGet]
-[Track(tables: ["roles"], cacheControl: "no-cache")]
-public ActionResult<IEnumerable<Role>> GetAll() 
-{
-    return dbContext.Roles.ToList();
-}
+[Track(["roles"])]
+public ActionResult<IEnumerable<Role>> GetAll() => dbContext.Roles.ToList();
 ```
 
-### Middleware Configuration
+**Minimal api:**
 
-Apply caching globally:
+```cs
+app.MapGet("/roles/getall", (DatabaseContext dbContext) =>
+{
+    return dbContext.Roles.ToList();
+})
+.WithTracking(options =>
+{
+    options.Tables = ["roles"];
+});
+```
+
+**Middleware:**
 
 ```cs
 app.UseTracker(options =>
 {
-    options.CacheControl = "max-age=60, stale-while-revalidate=60, stale-if-error=86400";
-    options.Filter = (httpContext) => httpContext.Request.Path.Value.Contains("/api/");
+    options.Tables = ["roles"];
+    options.Filter = (httpContext) => httpContext.Request.Path.Value.Contains("/api/roles/getall");
 });
 ```
 
-### Minimal APIs
-
-Configure tracking directly on minimal API endpoints:
-
-```cs
-app.MapGet("/api/user-profile", () => 
-{
-    // Your endpoint logic
-})
-.WithTracking(options =>
-{
-    options.Tables = ["users", "profiles", "preferences"];
-    options.CacheControl = "max-age=300"; // 5 minutes
-});
-```
-
-### Fast Endpoints
-
-Configure tracking directly with [Fast Endpoints](https://github.com/FastEndpoints/FastEndpoints):
-
-```cs
-builder.Services.AddTrackerFastEndpoints();
-
-[Track(tables: ["roles"])] //attribute usage is optional, if not specified options will be fully taked from DI
-public sealed class MyEndpoint : Endpoint<EmptyRequest>
-{
-    public override void Configure()
-    {
-        PreProcessor<TrackerPreProcessor<EmptyRequest>>();
-    }
-}
-
-//or global
-app.UseFastEndpoints((config) =>
-{
-    config.Endpoints.Configurator = ep =>
-    {
-        ep.PreProcessor<GlobalTrackerPreProcessor>(Order.Before);
-    };
-});
-```
-
-## 🧪 Verifying behavior
+## Verifying behavior
 
 ### Testing Cache Hits
 
@@ -213,7 +100,7 @@ app.UseFastEndpoints((config) =>
 
 To test the full request pipeline:
 
-* Open Developer Tools → Network tab
+* Open Developer Tools -> Network tab
 * Check "Disable cache" in the toolbar
 * Refresh the page
 
