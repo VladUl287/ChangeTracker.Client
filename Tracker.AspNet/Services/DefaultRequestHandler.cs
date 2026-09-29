@@ -15,9 +15,9 @@ public sealed class DefaultRequestHandler(
         ArgumentNullException.ThrowIfNull(ctx, nameof(ctx));
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        var traceId = new TraceId(ctx);
+        var reqId = new RequestId(ctx);
 
-        logger.LogRequestHandleStarted(traceId, ctx.Request.Path);
+        logger.LogRequestHandleStarted(reqId, ctx.Request.Path);
 
         var provider = providerResolver.ResolveProvider(ctx, options, out var canDispose);
 
@@ -25,10 +25,10 @@ public sealed class DefaultRequestHandler(
         {
             var lastTimestamp = await GetLastVersionAsync(options, provider, token);
 
-            var notModified = NotModified(ctx, options, traceId, lastTimestamp, out var suffix);
+            var notModified = NotModified(ctx, options, reqId, lastTimestamp, out var suffix);
             if (notModified)
             {
-                logger.LogNotModified(traceId);
+                logger.LogNotModified(reqId);
                 return true;
             }
 
@@ -36,7 +36,7 @@ public sealed class DefaultRequestHandler(
             ctx.Response.Headers.CacheControl = options.CacheControl;
             ctx.Response.Headers.ETag = etag;
 
-            logger.LogETagAdded(etag, traceId);
+            logger.LogETagAdded(etag, reqId);
             return false;
         }
         finally
@@ -44,11 +44,11 @@ public sealed class DefaultRequestHandler(
             if (canDispose && provider is IDisposable d)
                 d.Dispose();
 
-            logger.LogRequestHandleFinished(traceId);
+            logger.LogRequestHandleFinished(reqId);
         }
     }
 
-    private bool NotModified(HttpContext ctx, ImmutableGlobalOptions options, TraceId traceId, ulong lastTimestamp, out string suffix)
+    private bool NotModified(HttpContext ctx, ImmutableGlobalOptions options, RequestId reqId, ulong lastTimestamp, out string suffix)
     {
         suffix = string.Empty;
 
@@ -64,7 +64,7 @@ public sealed class DefaultRequestHandler(
             return false;
 
         ctx.Response.StatusCode = StatusCodes.Status304NotModified;
-        logger.LogNotModified(traceId, ifNoneMatch);
+        logger.LogNotModified(reqId, ifNoneMatch);
         return true;
     }
 

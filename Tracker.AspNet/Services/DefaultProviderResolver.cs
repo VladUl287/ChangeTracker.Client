@@ -23,7 +23,7 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
         ArgumentNullException.ThrowIfNull(ctx, nameof(ctx));
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        var traceId = new TraceId(ctx);
+        var traceId = new RequestId(ctx);
         try
         {
             canDispose = false;

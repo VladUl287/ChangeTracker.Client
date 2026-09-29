@@ -13,7 +13,7 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
 {
     public bool ValidRequest(HttpContext ctx, ImmutableGlobalOptions opts)
     {
-        var traceId = new TraceId(ctx);
+        var traceId = new RequestId(ctx);
 
         logger.LogFilterStarted(traceId, ctx.Request.Path);
 
