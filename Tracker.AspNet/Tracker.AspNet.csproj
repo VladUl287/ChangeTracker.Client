@@ -10,6 +10,8 @@
 		<Version>1.0.3</Version>
 		<PackageVersion>$(Version)</PackageVersion>
 
+		<PackageIcon>icon.png</PackageIcon>
+
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/VladUl287/ChangeTracker.Client</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/VladUl287/ChangeTracker.Client</RepositoryUrl>
@@ -40,6 +42,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Include="icon.png" Pack="true" PackagePath="\" />
 		<ProjectReference Include="..\Tracker.Core\Tracker.Core.csproj" />
 	</ItemGroup>
 
