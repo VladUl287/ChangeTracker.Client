@@ -11,7 +11,7 @@ namespace Tracker.AspNet.Services;
 
 public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) : IRequestFilter
 {
-    public bool ValidRequest(HttpContext ctx, ImmutableGlobalOptions opts)
+    public bool ValidRequest(HttpContext ctx, TrackOptionsSnapshot opts)
     {
         var traceId = new RequestId(ctx);
 

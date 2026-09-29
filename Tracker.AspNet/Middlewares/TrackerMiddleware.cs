@@ -6,7 +6,7 @@ namespace Tracker.AspNet.Middlewares;
 
 public sealed class TrackerMiddleware(
     RequestDelegate next, IRequestFilter filter, IRequestHandler service,
-    ImmutableGlobalOptions opts)
+    TrackOptionsSnapshot opts)
 {
     public async Task InvokeAsync(HttpContext ctx)
     {

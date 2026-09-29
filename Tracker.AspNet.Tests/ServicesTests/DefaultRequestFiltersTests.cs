@@ -25,7 +25,7 @@ public class DefaultRequestFilterTests
     {
         // Arrange
         _httpContext.Request.Method = HttpMethods.Get;
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
 
         // Act
         var result = _filter.ValidRequest(_httpContext, options);
@@ -47,7 +47,7 @@ public class DefaultRequestFilterTests
     {
         // Arrange
         _httpContext.Request.Method = method;
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
 
         // Act
         var result = _filter.ValidRequest(_httpContext, options);
@@ -62,7 +62,7 @@ public class DefaultRequestFilterTests
         // Arrange
         _httpContext.Request.Method = HttpMethods.Get;
         _httpContext.Response.Headers.ETag = "test-etag";
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
 
         // Act
         var result = _filter.ValidRequest(_httpContext, options);
@@ -82,7 +82,7 @@ public class DefaultRequestFilterTests
         // Arrange
         _httpContext.Request.Method = HttpMethods.Get;
         _httpContext.Request.Headers.CacheControl = cacheControl;
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             InvalidRequestDirectives = ["no-store"]
         };
@@ -106,7 +106,7 @@ public class DefaultRequestFilterTests
         // Arrange
         _httpContext.Request.Method = HttpMethods.Get;
         _httpContext.Response.Headers.CacheControl = cacheControl;
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             InvalidResponseDirectives = ["no-store", "immutable"]
         };
@@ -135,7 +135,7 @@ public class DefaultRequestFilterTests
             _httpContext.Request.Headers.CacheControl = cacheControl;
             _httpContext.Response.Headers.CacheControl = cacheControl;
         }
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             InvalidRequestDirectives = ["no-store"],
             InvalidResponseDirectives = ["no-store", "immutable"]
@@ -155,7 +155,7 @@ public class DefaultRequestFilterTests
         _httpContext.Request.Method = HttpMethods.Get;
         _httpContext.Response.Headers.Append("Cache-Control", "max-age=3600");
         _httpContext.Response.Headers.Append("Cache-Control", "immutable");
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             InvalidResponseDirectives = ["no-store", "immutable"]
         };
@@ -174,7 +174,7 @@ public class DefaultRequestFilterTests
         _httpContext.Request.Method = HttpMethods.Get;
         _httpContext.Response.Headers.Append("Cache-Control", "max-age=3600");
         _httpContext.Response.Headers.Append("Cache-Control", "immutable");
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
 
         // Act
         var result = _filter.ValidRequest(_httpContext, options);
@@ -190,7 +190,7 @@ public class DefaultRequestFilterTests
         _httpContext.Request.Method = HttpMethods.Get;
         _httpContext.Request.Headers.CacheControl = "";
         _httpContext.Response.Headers.CacheControl = "";
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             InvalidResponseDirectives = ["no-store", "immutable"]
         };
@@ -269,7 +269,7 @@ public class DefaultRequestFilterTests
     {
         // Arrange
         _httpContext.Request.Method = HttpMethods.Get;
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             Filter = (_) => false
         };
@@ -286,7 +286,7 @@ public class DefaultRequestFilterTests
     {
         // Arrange
         _httpContext.Request.Method = HttpMethods.Get;
-        var options = new ImmutableGlobalOptions()
+        var options = new TrackOptionsSnapshot()
         {
             Filter = (_) => true
         };

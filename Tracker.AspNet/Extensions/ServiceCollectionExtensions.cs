@@ -12,62 +12,60 @@ namespace Tracker.AspNet.Extensions;
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddTracker(this IServiceCollection services) =>
-        services.AddTracker(new GlobalOptions());
+        services.AddTracker(new TrackOptions());
 
-    public static IServiceCollection AddTracker(this IServiceCollection services, GlobalOptions options)
+    public static IServiceCollection AddTracker(this IServiceCollection services, TrackOptions options)
     {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
         services.AddSingleton((provider) =>
         {
-            var optionsBuilder = provider.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+            var optionsBuilder = provider.GetRequiredService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
             return optionsBuilder.Build(options);
         });
 
         return services.AddTrackerBase();
     }
 
-    public static IServiceCollection AddTracker(this IServiceCollection services, Action<GlobalOptions> configure)
+    public static IServiceCollection AddTracker(this IServiceCollection services, Action<TrackOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(configure, nameof(configure));
 
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         configure(options);
         return services.AddTracker(options);
     }
 
     public static IServiceCollection AddTracker<TContext>(this IServiceCollection services) where TContext : DbContext =>
-        services.AddTracker<TContext>(new GlobalOptions());
+        services.AddTracker<TContext>(new TrackOptions());
 
-    public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, GlobalOptions options)
+    public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, TrackOptions options)
          where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
         services.AddSingleton((provider) =>
         {
-            var optionsBuilder = provider.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+            var optionsBuilder = provider.GetRequiredService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
             return optionsBuilder.Build<TContext>(options);
         });
 
         return services.AddTrackerBase();
     }
 
-    public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, Action<GlobalOptions> configure)
+    public static IServiceCollection AddTracker<TContext>(this IServiceCollection services, Action<TrackOptions> configure)
          where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(configure, nameof(configure));
 
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         configure(options);
         return services.AddTracker<TContext>(options);
     }
 
     private static IServiceCollection AddTrackerBase(this IServiceCollection services)
     {
-        services.AddSingleton<ITrackerHasher, DefaultTrackerHasher>();
-
-        services.AddSingleton<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>, DefaultOptionsBuilder>();
+        services.AddSingleton<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>, DefaultOptionsBuilder>();
 
         services.AddSingleton<IAssemblyTimestampProvider>(new AssemblyTimestampProvider(Assembly.GetExecutingAssembly()));
         services.AddSingleton<IETagProvider, DefaultETagProvider>();

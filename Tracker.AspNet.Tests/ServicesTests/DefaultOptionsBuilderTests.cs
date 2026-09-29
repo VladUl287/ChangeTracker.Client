@@ -35,7 +35,7 @@ public class DefaultOptionsBuilderTests
     public void Build_WithNullOptions_ThrowsArgumentNullException()
     {
         // Arrange
-        GlobalOptions options = null!;
+        TrackOptions options = null!;
 
         // Act & Assert
         Assert.Throws<NullReferenceException>(() => _builder.Build(options));
@@ -45,7 +45,7 @@ public class DefaultOptionsBuilderTests
     public void Build_ReturnsImmutableGlobalOptions_WithAllPropertiesSet()
     {
         // Arrange
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             ProviderId = "TestProvider",
             Suffix = _ => "/suffix",
@@ -85,7 +85,7 @@ public class DefaultOptionsBuilderTests
 
         static string suffix(HttpContext ctx) => "test-suffix";
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             ProviderId = "test-provider",
             SourceProvider = mockSourceProvider,
@@ -126,7 +126,7 @@ public class DefaultOptionsBuilderTests
     public void Build_WithNullCollections_ReturnsEmptyImmutableArrays()
     {
         // Arrange
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             Tables = null!,
             InvalidRequestDirectives = null!,
@@ -160,7 +160,7 @@ public class DefaultOptionsBuilderTests
             mockCacheControlBuilder.WithDirective(builderCacheControl);
         }
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             CacheControl = cacheControl,
             CacheControlBuilder = mockCacheControlBuilder
@@ -187,7 +187,7 @@ public class DefaultOptionsBuilderTests
         _mockTableNameResolver.Setup(x => x.GetTablesNames(mockDbContext.Object, entities))
             .Returns(resolvedTables);
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             Tables = ["OptionTable1", "OptionTable2"],
             Entities = entities
@@ -216,7 +216,7 @@ public class DefaultOptionsBuilderTests
         _mockServiceProvider.Setup(x => x.GetService(typeof(TestDbContext)))
             .Returns(mockDbContext.Object);
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             Tables = ["Table1", "Table2"],
             Entities = null
@@ -240,7 +240,7 @@ public class DefaultOptionsBuilderTests
         _mockServiceProvider.Setup(x => x.GetService(typeof(TestDbContext)))
             .Returns(mockDbContext.Object);
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             Tables = ["Table1", "Table2"],
             Entities = []
@@ -262,7 +262,7 @@ public class DefaultOptionsBuilderTests
         _mockServiceProvider.Setup(x => x.GetService(typeof(TestDbContext)))
             .Returns(mockDbContext.Object);
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             Tables = null,
             Entities = new[] { typeof(TestEntity1) }
@@ -290,7 +290,7 @@ public class DefaultOptionsBuilderTests
         _mockServiceProvider.Setup(x => x.GetService(typeof(TestDbContext)))
             .Throws(new InvalidOperationException("Test exception"));
 
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => _builder.Build<TestDbContext>(options));
@@ -308,7 +308,7 @@ public class DefaultOptionsBuilderTests
         _mockServiceProvider.Setup(x => x.GetService(typeof(TestDbContext)))
             .Returns(mockDbContext.Object);
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             ProviderId = "test-provider",
             SourceProvider = mockSourceProvider,
@@ -340,7 +340,7 @@ public class DefaultOptionsBuilderTests
         _mockTableNameResolver.Setup(x => x.GetTablesNames(mockDbContext.Object, It.IsAny<Type[]>()))
             .Returns(resolvedTables);
 
-        var options = new GlobalOptions
+        var options = new TrackOptions
         {
             Tables = ["Table1", "Table2"],
             Entities = [typeof(TestEntity1)]

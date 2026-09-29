@@ -47,7 +47,7 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        GlobalOptions options = null;
+        TrackOptions options = null;
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -61,9 +61,9 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
-        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(null);
 
         // Act & Assert
@@ -76,17 +76,17 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
+        var options = new TrackOptions();
+        var immutableOptions = new TrackOptionsSnapshot();
 
         _mockApplicationBuilder.Setup(c => c.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
             .Returns(_mockApplicationBuilder.Object);
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         mockOptionsBuilder.Setup(x => x.Build(options))
             .Returns(immutableOptions);
 
-        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
 
         // Act
@@ -103,7 +103,7 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        GlobalOptions options = null;
+        TrackOptions options = null;
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -117,9 +117,9 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
-        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(null);
 
         // Act & Assert
@@ -132,17 +132,17 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        var options = new GlobalOptions();
-        var immutableOptions = new ImmutableGlobalOptions();
+        var options = new TrackOptions();
+        var immutableOptions = new TrackOptionsSnapshot();
 
         _mockApplicationBuilder.Setup(c => c.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
             .Returns(_mockApplicationBuilder.Object);
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         mockOptionsBuilder.Setup(x => x.Build<TestDbContext>(options))
             .Returns(immutableOptions);
 
-        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
 
         // Act
@@ -159,7 +159,7 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        Action<GlobalOptions> configure = null;
+        Action<TrackOptions> configure = null;
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -174,17 +174,17 @@ public class ApplicationBuilderExtensionsTests
         // Arrange
         var builder = _mockApplicationBuilder.Object;
         var configuredProperty = "TestValue";
-        var capturedOptions = (GlobalOptions)null;
+        var capturedOptions = (TrackOptions)null;
 
         _mockApplicationBuilder.Setup(c => c.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
             .Returns(_mockApplicationBuilder.Object);
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(x => x.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
-            .Callback<GlobalOptions>(opts => capturedOptions = opts)
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(x => x.Build<TestDbContext>(It.IsAny<TrackOptions>()))
+            .Callback<TrackOptions>(opts => capturedOptions = opts)
+            .Returns(new TrackOptionsSnapshot());
 
-        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
 
         // Act
@@ -205,7 +205,7 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        Action<GlobalOptions> configure = null;
+        Action<TrackOptions> configure = null;
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentNullException>(() =>
@@ -220,17 +220,17 @@ public class ApplicationBuilderExtensionsTests
         // Arrange
         var builder = _mockApplicationBuilder.Object;
         var configuredProperty = "TestValue";
-        var capturedOptions = (GlobalOptions)null;
+        var capturedOptions = (TrackOptions)null;
 
         _mockApplicationBuilder.Setup(c => c.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
            .Returns(_mockApplicationBuilder.Object);
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(x => x.Build(It.IsAny<GlobalOptions>()))
-            .Callback<GlobalOptions>(opts => capturedOptions = opts)
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(x => x.Build(It.IsAny<TrackOptions>()))
+            .Callback<TrackOptions>(opts => capturedOptions = opts)
+            .Returns(new TrackOptionsSnapshot());
 
-        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
 
         // Act
@@ -251,16 +251,16 @@ public class ApplicationBuilderExtensionsTests
     {
         // Arrange
         var builder = _mockApplicationBuilder.Object;
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        var immutableOptions = new ImmutableGlobalOptions();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        var immutableOptions = new TrackOptionsSnapshot();
 
         _mockApplicationBuilder.Setup(c => c.Use(It.IsAny<Func<RequestDelegate, RequestDelegate>>()))
            .Returns(_mockApplicationBuilder.Object);
 
-        mockOptionsBuilder.Setup(x => x.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
+        mockOptionsBuilder.Setup(x => x.Build<TestDbContext>(It.IsAny<TrackOptions>()))
             .Returns(immutableOptions);
 
-        _mockServiceProvider.SetupSequence(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        _mockServiceProvider.SetupSequence(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
 
         // Act
@@ -268,7 +268,7 @@ public class ApplicationBuilderExtensionsTests
 
         // Assert
         Assert.Same(builder, result);
-        _mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)), Times.Once);
+        _mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)), Times.Once);
     }
 
     private class TestDbContext : DbContext

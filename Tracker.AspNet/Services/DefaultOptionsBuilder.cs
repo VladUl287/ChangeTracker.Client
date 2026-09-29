@@ -9,13 +9,13 @@ using Tracker.Core.Services.Contracts;
 namespace Tracker.AspNet.Services;
 
 public sealed class DefaultOptionsBuilder(IServiceScopeFactory scopeFactory, ITableNameResolver tableNameResolver) :
-    IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>
+    IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>
 {
     private static readonly string _defaultCacheControl = new CacheControlBuilder().WithNoCache().Combine();
 
-    public ImmutableGlobalOptions Build(GlobalOptions options)
+    public TrackOptionsSnapshot Build(TrackOptions options)
     {
-        return new ImmutableGlobalOptions
+        return new TrackOptionsSnapshot
         {
             Suffix = options.Suffix,
             Filter = options.Filter,
@@ -29,7 +29,7 @@ public sealed class DefaultOptionsBuilder(IServiceScopeFactory scopeFactory, ITa
         };
     }
 
-    public ImmutableGlobalOptions Build<TContext>(GlobalOptions options) where TContext : DbContext
+    public TrackOptionsSnapshot Build<TContext>(TrackOptions options) where TContext : DbContext
     {
         using var scope = scopeFactory.CreateScope();
 
@@ -39,7 +39,7 @@ public sealed class DefaultOptionsBuilder(IServiceScopeFactory scopeFactory, ITa
             .. tableNameResolver.GetTablesNames(context, options.Entities ?? [])
         ]);
 
-        return new ImmutableGlobalOptions
+        return new TrackOptionsSnapshot
         {
             Tables = [.. tables],
             Suffix = options.Suffix,
@@ -54,6 +54,6 @@ public sealed class DefaultOptionsBuilder(IServiceScopeFactory scopeFactory, ITa
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static string ResolveCacheControl(GlobalOptions options) =>
+    private static string ResolveCacheControl(TrackOptions options) =>
         options.CacheControl ?? options.CacheControlBuilder?.Combine() ?? _defaultCacheControl;
 }

@@ -18,7 +18,7 @@ public sealed class DefaultProviderResolver(ILogger<DefaultProviderResolver> log
     private static readonly object _lock = new();
 #endif
 
-    public ISourceProvider ResolveProvider(HttpContext ctx, ImmutableGlobalOptions options, out bool canDispose)
+    public ISourceProvider ResolveProvider(HttpContext ctx, TrackOptionsSnapshot options, out bool canDispose)
     {
         ArgumentNullException.ThrowIfNull(ctx, nameof(ctx));
         ArgumentNullException.ThrowIfNull(options, nameof(options));

@@ -12,7 +12,7 @@ public class TrackerMiddlewareTests
     private readonly Mock<RequestDelegate> _nextMock;
     private readonly Mock<IRequestFilter> _filterMock;
     private readonly Mock<IRequestHandler> _serviceMock;
-    private readonly ImmutableGlobalOptions _options;
+    private readonly TrackOptionsSnapshot _options;
     private readonly TrackerMiddleware _middleware;
     private readonly DefaultHttpContext _httpContext;
 
@@ -21,7 +21,7 @@ public class TrackerMiddlewareTests
         _nextMock = new Mock<RequestDelegate>();
         _filterMock = new Mock<IRequestFilter>();
         _serviceMock = new Mock<IRequestHandler>();
-        _options = new ImmutableGlobalOptions(/* initialize with test values */);
+        _options = new TrackOptionsSnapshot(/* initialize with test values */);
         _middleware = new TrackerMiddleware(_nextMock.Object, _filterMock.Object, _serviceMock.Object, _options);
         _httpContext = new DefaultHttpContext();
     }
@@ -65,7 +65,7 @@ public class TrackerMiddlewareTests
 
         // Assert
         _nextMock.Verify(next => next(_httpContext), Times.Once);
-        _serviceMock.Verify(s => s.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), default), Times.Never);
+        _serviceMock.Verify(s => s.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), default), Times.Never);
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public class TrackerMiddlewareTests
 
         if (!filterValid)
         {
-            _serviceMock.Verify(s => s.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), default), Times.Never);
+            _serviceMock.Verify(s => s.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), default), Times.Never);
         }
     }
 

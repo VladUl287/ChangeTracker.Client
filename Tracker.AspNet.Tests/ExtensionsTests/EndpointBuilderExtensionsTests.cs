@@ -15,21 +15,21 @@ public class EndpointBuilderExtensionsTests
     {
         // Arrange
         var builder = new TestEndpointBuilder();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         var endpointBuilder = new Mock<EndpointBuilder>();
         var mockServiceProvider = new Mock<IServiceProvider>();
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var mockEtagService = new Mock<IRequestHandler>();
         var mockRequestFilter = new Mock<IRequestFilter>();
 
-        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(mockEtagService.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
             .Returns(mockRequestFilter.Object);
 
-        var immutableOptions = new ImmutableGlobalOptions();
+        var immutableOptions = new TrackOptionsSnapshot();
         mockOptionsBuilder.Setup(x => x.Build<DbContext>(options))
             .Returns(immutableOptions);
 
@@ -53,7 +53,7 @@ public class EndpointBuilderExtensionsTests
 
         // Verify services were requested
         Assert.NotEmpty(endpointBuilder.Object.FilterFactories);
-        mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)), Times.Once);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)), Times.Once);
         mockServiceProvider.Verify(x => x.GetService(typeof(IRequestHandler)), Times.Once);
         mockServiceProvider.Verify(x => x.GetService(typeof(IRequestFilter)), Times.Once);
         mockOptionsBuilder.Verify(x => x.Build<DbContext>(options), Times.Once);
@@ -97,21 +97,21 @@ public class EndpointBuilderExtensionsTests
     {
         // Arrange
         var builder = new TestEndpointBuilder();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         var endpointBuilder = new Mock<EndpointBuilder>();
         var mockServiceProvider = new Mock<IServiceProvider>();
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var mockEtagService = new Mock<IRequestHandler>();
         var mockRequestFilter = new Mock<IRequestFilter>();
 
-        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(mockEtagService.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
             .Returns(mockRequestFilter.Object);
 
-        var immutableOptions = new ImmutableGlobalOptions();
+        var immutableOptions = new TrackOptionsSnapshot();
         mockOptionsBuilder.Setup(x => x.Build(options))
             .Returns(immutableOptions);
 
@@ -134,7 +134,7 @@ public class EndpointBuilderExtensionsTests
         static ValueTask<object?> next(EndpointFilterInvocationContext context) => ValueTask.FromResult<object?>(null);
         var filterDelegate = endpointBuilder.Object.FilterFactories.FirstOrDefault()?.Invoke(factoryContext, next);
 
-        mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)), Times.Once);
+        mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)), Times.Once);
         mockServiceProvider.Verify(x => x.GetService(typeof(IRequestHandler)), Times.Once);
         mockServiceProvider.Verify(x => x.GetService(typeof(IRequestFilter)), Times.Once);
         mockOptionsBuilder.Verify(x => x.Build(options), Times.Once);
@@ -164,21 +164,21 @@ public class EndpointBuilderExtensionsTests
     {
         // Arrange
         var builder = new TestEndpointBuilder();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         var endpointBuilder = new Mock<EndpointBuilder>();
         var mockServiceProvider = new Mock<IServiceProvider>();
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var mockEtagService = new Mock<IRequestHandler>();
         var mockRequestFilter = new Mock<IRequestFilter>();
 
-        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>)))
+        mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(mockEtagService.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
             .Returns(mockRequestFilter.Object);
 
-        var immutableOptions = new ImmutableGlobalOptions();
+        var immutableOptions = new TrackOptionsSnapshot();
         mockOptionsBuilder.Setup(x => x.Build<DbContext>(options))
             .Returns(immutableOptions);
 
@@ -206,7 +206,7 @@ public class EndpointBuilderExtensionsTests
         var builder = new TestEndpointBuilder();
 
         // Act & Assert for each overload
-        var result1 = builder.WithTracking<TestEndpointBuilder, DbContext>(new GlobalOptions());
+        var result1 = builder.WithTracking<TestEndpointBuilder, DbContext>(new TrackOptions());
         Assert.Same(builder, result1);
 
         var result2 = builder.WithTracking<TestEndpointBuilder, DbContext>(_ => { });
@@ -215,7 +215,7 @@ public class EndpointBuilderExtensionsTests
         var result3 = builder.WithTracking<TestEndpointBuilder>();
         Assert.Same(builder, result3);
 
-        var result4 = builder.WithTracking<TestEndpointBuilder>(new GlobalOptions());
+        var result4 = builder.WithTracking<TestEndpointBuilder>(new TrackOptions());
         Assert.Same(builder, result4);
 
         var result5 = builder.WithTracking<TestEndpointBuilder>(_ => { });

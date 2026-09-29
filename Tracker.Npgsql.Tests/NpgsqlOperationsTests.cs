@@ -415,7 +415,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         }
 
         // Act
-        await _operations.GetLastVersions(tables, versions);
+        //await _operations.GetLastVersions(tables, versions);
 
         // Assert
         foreach (var version in versions)

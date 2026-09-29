@@ -20,16 +20,16 @@ public abstract class TrackAttributeBase : Attribute, IAsyncActionFilter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool RequestValid(HttpContext httpCtx, ImmutableGlobalOptions options) =>
+    private static bool RequestValid(HttpContext httpCtx, TrackOptionsSnapshot options) =>
         httpCtx.RequestServices
             .GetRequiredService<IRequestFilter>()
             .ValidRequest(httpCtx, options);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ValueTask<bool> NotModified(HttpContext httpCtx, ImmutableGlobalOptions options) =>
+    private static ValueTask<bool> NotModified(HttpContext httpCtx, TrackOptionsSnapshot options) =>
         httpCtx.RequestServices
             .GetRequiredService<IRequestHandler>()
             .HandleRequest(httpCtx, options);
 
-    public abstract ImmutableGlobalOptions GetOptions(HttpContext execContext);
+    public abstract TrackOptionsSnapshot GetOptions(HttpContext execContext);
 }

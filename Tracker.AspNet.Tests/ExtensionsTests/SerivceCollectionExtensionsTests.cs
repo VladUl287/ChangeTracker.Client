@@ -27,8 +27,7 @@ public class ServiceCollectionExtensionsTests
 
         // Verify base services are registered
         var serviceProvider = services.BuildServiceProvider();
-        Assert.NotNull(serviceProvider.GetService<ITrackerHasher>());
-        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>());
+        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>());
         Assert.NotNull(serviceProvider.GetService<IAssemblyTimestampProvider>());
         Assert.NotNull(serviceProvider.GetService<IETagProvider>());
         Assert.NotNull(serviceProvider.GetService<IRequestHandler>());
@@ -37,7 +36,7 @@ public class ServiceCollectionExtensionsTests
         Assert.NotNull(serviceProvider.GetService<ITableNameResolver>());
 
         // Verify GlobalOptions singleton is registered
-        var optionsInstance = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var optionsInstance = serviceProvider.GetService<TrackOptionsSnapshot>();
         Assert.NotNull(optionsInstance);
     }
 
@@ -46,17 +45,17 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
         var result = ServiceCollectionExtensions.AddTracker(services, options);
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
         services.AddSingleton(mockOptionsBuilder.Object);
 
         // Act
         var provider = services.BuildServiceProvider();
-        provider.GetService<ImmutableGlobalOptions>();
+        provider.GetService<TrackOptionsSnapshot>();
 
         // Assert
         Assert.Same(services, result);
@@ -71,7 +70,7 @@ public class ServiceCollectionExtensionsTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            ServiceCollectionExtensions.AddTracker(services, (GlobalOptions)null!));
+            ServiceCollectionExtensions.AddTracker(services, (TrackOptions)null!));
     }
 
     [Fact]
@@ -79,12 +78,12 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
         ServiceCollectionExtensions.AddTracker(services, options);
-        var expectedImmutableOptions = new ImmutableGlobalOptions();
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<GlobalOptions>()))
+        var expectedImmutableOptions = new TrackOptionsSnapshot();
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<TrackOptions>()))
             .Returns(expectedImmutableOptions);
         services.AddSingleton(mockOptionsBuilder.Object);
 
@@ -92,7 +91,7 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
         Assert.Same(expectedImmutableOptions, actualOptions);
     }
 
@@ -108,19 +107,19 @@ public class ServiceCollectionExtensionsTests
             wasConfigured = true;
         });
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
         services.AddSingleton(mockOptionsBuilder.Object);
 
         // Act
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
         // Assert
         Assert.Same(services, result);
         Assert.True(wasConfigured);
-        mockOptionsBuilder.Verify(b => b.Build(It.IsAny<GlobalOptions>()), Times.Once);
+        mockOptionsBuilder.Verify(b => b.Build(It.IsAny<TrackOptions>()), Times.Once);
     }
 
     [Fact]
@@ -131,7 +130,7 @@ public class ServiceCollectionExtensionsTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            ServiceCollectionExtensions.AddTracker(services, (Action<GlobalOptions>)null!));
+            ServiceCollectionExtensions.AddTracker(services, (Action<TrackOptions>)null!));
     }
 
     [Fact]
@@ -139,12 +138,12 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        GlobalOptions capturedOptions = null!;
+        TrackOptions capturedOptions = null!;
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions())
-            .Callback<GlobalOptions>(opts => capturedOptions = opts);
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot())
+            .Callback<TrackOptions>(opts => capturedOptions = opts);
 
         // Act
         ServiceCollectionExtensions.AddTracker(services, options =>
@@ -154,11 +153,11 @@ public class ServiceCollectionExtensionsTests
         });
         services.AddSingleton(mockOptionsBuilder.Object);
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
         // Assert
         Assert.NotNull(capturedOptions);
-        Assert.IsType<GlobalOptions>(capturedOptions);
+        Assert.IsType<TrackOptions>(capturedOptions);
     }
 
     [Fact]
@@ -174,20 +173,19 @@ public class ServiceCollectionExtensionsTests
         Assert.Same(services, result);
 
         var serviceProvider = services.BuildServiceProvider();
-        Assert.NotNull(serviceProvider.GetService<ITrackerHasher>());
-        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>());
+        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>());
 
         // Verify generic Build was used
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
 
         ServiceCollectionExtensions.AddTracker<TestDbContext>(services);
         services.AddSingleton(mockOptionsBuilder.Object);
         serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
-        mockOptionsBuilder.Verify(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()), Times.Once);
+        mockOptionsBuilder.Verify(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()), Times.Once);
     }
 
     [Fact]
@@ -195,17 +193,17 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
 
         // Act
         var result = ServiceCollectionExtensions.AddTracker<TestDbContext>(services, options);
         services.AddSingleton(mockOptionsBuilder.Object);
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
         // Assert
         Assert.Same(services, result);
@@ -220,7 +218,7 @@ public class ServiceCollectionExtensionsTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            ServiceCollectionExtensions.AddTracker<TestDbContext>(services, (GlobalOptions)null!));
+            ServiceCollectionExtensions.AddTracker<TestDbContext>(services, (TrackOptions)null!));
     }
 
     [Fact]
@@ -228,17 +226,17 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
 
         // Act
         ServiceCollectionExtensions.AddTracker<TestDbContext>(services, options);
         services.AddSingleton(mockOptionsBuilder.Object);
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
         // Assert
         // Verify that the generic Build method was called, not the non-generic one
@@ -253,9 +251,9 @@ public class ServiceCollectionExtensionsTests
         var services = new ServiceCollection();
         bool wasConfigured = false;
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
 
         // Act
         var result = ServiceCollectionExtensions.AddTracker<TestDbContext>(services, options =>
@@ -264,12 +262,12 @@ public class ServiceCollectionExtensionsTests
         });
         services.AddSingleton(mockOptionsBuilder.Object);
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
         // Assert
         Assert.Same(services, result);
         Assert.True(wasConfigured);
-        mockOptionsBuilder.Verify(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()), Times.Once);
+        mockOptionsBuilder.Verify(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()), Times.Once);
     }
 
     [Fact]
@@ -280,7 +278,7 @@ public class ServiceCollectionExtensionsTests
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            ServiceCollectionExtensions.AddTracker<TestDbContext>(services, (Action<GlobalOptions>)null!));
+            ServiceCollectionExtensions.AddTracker<TestDbContext>(services, (Action<TrackOptions>)null!));
     }
 
     [Fact]
@@ -288,12 +286,12 @@ public class ServiceCollectionExtensionsTests
     {
         // Arrange
         var services = new ServiceCollection();
-        var capturedOptions = new GlobalOptions();
+        var capturedOptions = new TrackOptions();
 
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions())
-            .Callback<GlobalOptions>(opts => capturedOptions = opts);
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot())
+            .Callback<TrackOptions>(opts => capturedOptions = opts);
 
         // Act
         ServiceCollectionExtensions.AddTracker<TestDbContext>(services, options =>
@@ -302,10 +300,10 @@ public class ServiceCollectionExtensionsTests
         });
         services.AddSingleton(mockOptionsBuilder.Object);
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
 
         // Assert
-        mockOptionsBuilder.Verify(b => b.Build<TestDbContext>(It.IsAny<GlobalOptions>()), Times.Once);
+        mockOptionsBuilder.Verify(b => b.Build<TestDbContext>(It.IsAny<TrackOptions>()), Times.Once);
     }
 
     [Fact]
@@ -321,11 +319,9 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
-        Assert.NotNull(serviceProvider.GetService<ITrackerHasher>());
-        Assert.IsType<DefaultTrackerHasher>(serviceProvider.GetService<ITrackerHasher>());
 
-        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>());
-        Assert.IsType<DefaultOptionsBuilder>(serviceProvider.GetService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>());
+        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>());
+        Assert.IsType<DefaultOptionsBuilder>(serviceProvider.GetService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>());
 
         Assert.NotNull(serviceProvider.GetService<IAssemblyTimestampProvider>());
         Assert.NotNull(serviceProvider.GetService<IETagProvider>());
@@ -372,7 +368,6 @@ public class ServiceCollectionExtensionsTests
 
         // Verify services are still registered
         var serviceProvider = services.BuildServiceProvider();
-        Assert.NotNull(serviceProvider.GetService<ITrackerHasher>());
     }
 
     [Fact]
@@ -387,9 +382,8 @@ public class ServiceCollectionExtensionsTests
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert - This test ensures all dependencies can be resolved
-        Assert.NotNull(serviceProvider.GetService<ImmutableGlobalOptions>());
-        Assert.NotNull(serviceProvider.GetService<ITrackerHasher>());
-        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>());
+        Assert.NotNull(serviceProvider.GetService<TrackOptionsSnapshot>());
+        Assert.NotNull(serviceProvider.GetService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>());
         Assert.NotNull(serviceProvider.GetService<IAssemblyTimestampProvider>());
         Assert.NotNull(serviceProvider.GetService<IETagProvider>());
         Assert.NotNull(serviceProvider.GetService<IRequestHandler>());
@@ -405,19 +399,19 @@ public class ServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Register mock options builder to capture context type
-        var mockOptionsBuilder = new Mock<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
-        mockOptionsBuilder.Setup(b => b.Build<CustomDbContext>(It.IsAny<GlobalOptions>()))
-            .Returns(new ImmutableGlobalOptions());
+        var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
+        mockOptionsBuilder.Setup(b => b.Build<CustomDbContext>(It.IsAny<TrackOptions>()))
+            .Returns(new TrackOptionsSnapshot());
 
         // Act
         ServiceCollectionExtensions.AddTracker<CustomDbContext>(services);
         services.AddSingleton(mockOptionsBuilder.Object);
         var serviceProvider = services.BuildServiceProvider();
-        var actualOptions = serviceProvider.GetService<ImmutableGlobalOptions>();
+        var actualOptions = serviceProvider.GetService<TrackOptionsSnapshot>();
         services.AddLogging();
 
         // Assert
-        mockOptionsBuilder.Verify(b => b.Build<CustomDbContext>(It.IsAny<GlobalOptions>()), Times.Once);
+        mockOptionsBuilder.Verify(b => b.Build<CustomDbContext>(It.IsAny<TrackOptions>()), Times.Once);
     }
 
     public class TestDbContext : DbContext { }

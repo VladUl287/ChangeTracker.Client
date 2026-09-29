@@ -12,42 +12,42 @@ public static class ApplicationBuilderExtensions
     public static IApplicationBuilder UseTracker(this IApplicationBuilder builder)
         => builder.UseMiddleware<TrackerMiddleware>();
 
-    public static IApplicationBuilder UseTracker(this IApplicationBuilder builder, GlobalOptions options)
+    public static IApplicationBuilder UseTracker(this IApplicationBuilder builder, TrackOptions options)
     {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        var optionsBuilder = builder.ApplicationServices.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var optionsBuilder = builder.ApplicationServices.GetRequiredService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var immutableOptions = optionsBuilder.Build(options);
 
         return builder.UseMiddleware<TrackerMiddleware>(immutableOptions);
     }
 
-    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, GlobalOptions options)
+    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, TrackOptions options)
         where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
-        var optionsBuilder = builder.ApplicationServices.GetRequiredService<IOptionsBuilder<GlobalOptions, ImmutableGlobalOptions>>();
+        var optionsBuilder = builder.ApplicationServices.GetRequiredService<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var immutableOptions = optionsBuilder.Build<TContext>(options);
 
         return builder.UseMiddleware<TrackerMiddleware>(immutableOptions);
     }
 
-    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, Action<GlobalOptions> configure)
+    public static IApplicationBuilder UseTracker<TContext>(this IApplicationBuilder builder, Action<TrackOptions> configure)
         where TContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(configure, nameof(configure));
 
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         configure(options);
         return builder.UseTracker<TContext>(options);
     }
 
-    public static IApplicationBuilder UseTracker(this IApplicationBuilder builder, Action<GlobalOptions> configure)
+    public static IApplicationBuilder UseTracker(this IApplicationBuilder builder, Action<TrackOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(configure, nameof(configure));
 
-        var options = new GlobalOptions();
+        var options = new TrackOptions();
         configure(options);
         return builder.UseTracker(options);
     }

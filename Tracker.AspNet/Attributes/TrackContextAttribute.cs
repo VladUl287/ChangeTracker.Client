@@ -16,7 +16,7 @@ public class TrackAttribute<TContext>(
 {
     public IReadOnlyList<Type>? Entities => entities;
 
-    public override ImmutableGlobalOptions GetOptions(HttpContext ctx)
+    public override TrackOptionsSnapshot GetOptions(HttpContext ctx)
     {
         if (_actionOptions is not null)
             return _actionOptions;
@@ -29,7 +29,7 @@ public class TrackAttribute<TContext>(
             var scopeFactory = ctx.RequestServices.GetRequiredService<IServiceScopeFactory>();
 
             using var scope = scopeFactory.CreateScope();
-            var options = scope.ServiceProvider.GetRequiredService<ImmutableGlobalOptions>();
+            var options = scope.ServiceProvider.GetRequiredService<TrackOptionsSnapshot>();
 
             _actionOptions = options with
             {
@@ -43,7 +43,7 @@ public class TrackAttribute<TContext>(
     }
 
     private static ImmutableArray<string> ResolveTables(
-        IReadOnlyList<string>? tables, IReadOnlyList<Type>? entities, IServiceProvider services, ImmutableGlobalOptions options)
+        IReadOnlyList<string>? tables, IReadOnlyList<Type>? entities, IServiceProvider services, TrackOptionsSnapshot options)
     {
         var tablesNames = new HashSet<string>(tables ?? []);
 

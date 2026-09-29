@@ -5,7 +5,7 @@ using Tracker.AspNet.Services.Contracts;
 namespace Tracker.AspNet.Services;
 
 public sealed class TrackerEndpointFilter(
-    IRequestHandler service, IRequestFilter filter, ImmutableGlobalOptions opts) : IEndpointFilter
+    IRequestHandler service, IRequestFilter filter, TrackOptionsSnapshot opts) : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext filterCtx, EndpointFilterDelegate next)
     {

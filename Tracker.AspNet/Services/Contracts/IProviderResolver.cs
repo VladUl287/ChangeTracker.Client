@@ -6,5 +6,5 @@ namespace Tracker.AspNet.Services.Contracts;
 
 public interface IProviderResolver
 {
-    ISourceProvider ResolveProvider(HttpContext ctx, ImmutableGlobalOptions options, out bool canDispose);
+    ISourceProvider ResolveProvider(HttpContext ctx, TrackOptionsSnapshot options, out bool canDispose);
 }

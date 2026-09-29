@@ -12,7 +12,7 @@ public class TrackAttribute(
     string? providerId = null,
     string? cacheControl = null) : TrackAttributeBase
 {
-    protected private ImmutableGlobalOptions? _actionOptions;
+    protected private TrackOptionsSnapshot? _actionOptions;
 
 #if NET9_0_OR_GREATER
     protected private readonly Lock _lock = new();
@@ -24,7 +24,7 @@ public class TrackAttribute(
     public string? ProviderId => providerId;
     public string? CacheControl => cacheControl;
 
-    public override ImmutableGlobalOptions GetOptions(HttpContext ctx)
+    public override TrackOptionsSnapshot GetOptions(HttpContext ctx)
     {
         if (_actionOptions is not null)
             return _actionOptions;
@@ -37,7 +37,7 @@ public class TrackAttribute(
             var scopeFactory = ctx.RequestServices.GetRequiredService<IServiceScopeFactory>();
             using var scope = scopeFactory.CreateScope();
 
-            var options = scope.ServiceProvider.GetRequiredService<ImmutableGlobalOptions>();
+            var options = scope.ServiceProvider.GetRequiredService<TrackOptionsSnapshot>();
 
             _actionOptions = options with
             {
@@ -51,7 +51,7 @@ public class TrackAttribute(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, ImmutableGlobalOptions options)
+    private static ImmutableArray<string> ResolveTables(IReadOnlyList<string>? tables, TrackOptionsSnapshot options)
     {
         if (tables is null || tables.Count == 0)
             return options.Tables;

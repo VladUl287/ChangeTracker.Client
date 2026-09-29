@@ -11,7 +11,6 @@ namespace Tracker.AspNet.Tests.ServicesTests;
 public class DefaultRequestHandlerTests
 {
     private readonly Mock<IETagProvider> _mockETagService;
-    private readonly Mock<ITrackerHasher> _mockTimestampsHasher;
     private readonly Mock<IProviderResolver> _providerResolver;
     private readonly Mock<ILogger<DefaultRequestHandler>> _mockLogger;
     private readonly DefaultRequestHandler _handler;
@@ -19,23 +18,22 @@ public class DefaultRequestHandlerTests
     public DefaultRequestHandlerTests()
     {
         _mockETagService = new Mock<IETagProvider>();
-        _mockTimestampsHasher = new Mock<ITrackerHasher>();
         _mockLogger = new Mock<ILogger<DefaultRequestHandler>>();
         _providerResolver = new Mock<IProviderResolver>();
 
-        _handler = new DefaultRequestHandler(
-            _mockETagService.Object,
-            _providerResolver.Object,
-            _mockTimestampsHasher.Object,
-            _mockLogger.Object
-        );
+        //_handler = new DefaultRequestHandler(
+        //    _mockETagService.Object,
+        //    _providerResolver.Object,
+        //    _mockTimestampsHasher.Object,
+        //    _mockLogger.Object
+        //);
     }
 
     [Fact]
     public async Task IsNotModified_ShouldThrowArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () =>
@@ -61,7 +59,7 @@ public class DefaultRequestHandlerTests
         var context = new DefaultHttpContext();
         context.Request.Headers.IfNoneMatch = etag;
 
-        var options = new ImmutableGlobalOptions
+        var options = new TrackOptionsSnapshot
         {
             Tables = [],
             CacheControl = "no-cache"
@@ -73,7 +71,7 @@ public class DefaultRequestHandlerTests
 
         var expectedShouldDispose = false;
         _providerResolver
-            .Setup(c => c.ResolveProvider(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
+            .Setup(c => c.ResolveProvider(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), out expectedShouldDispose))
             .Returns(mockSourceOperations.Object);
 
         _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))
@@ -97,7 +95,7 @@ public class DefaultRequestHandlerTests
 
         context.Request.Headers.IfNoneMatch = etag;
 
-        var options = new ImmutableGlobalOptions
+        var options = new TrackOptionsSnapshot
         {
             Tables = [],
             CacheControl = "no-cache"
@@ -109,7 +107,7 @@ public class DefaultRequestHandlerTests
 
         var expectedShouldDispose = false;
         _providerResolver
-            .Setup(c => c.ResolveProvider(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
+            .Setup(c => c.ResolveProvider(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), out expectedShouldDispose))
             .Returns(mockSourceOperations.Object);
 
         _mockETagService.Setup(x => x.Compare(etag, It.IsAny<ulong>(), It.IsAny<string>()))

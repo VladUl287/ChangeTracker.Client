@@ -23,7 +23,7 @@ public class DefaultProviderResolverTests
     public void ResolveProvider_ShouldThrowArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(
@@ -46,7 +46,7 @@ public class DefaultProviderResolverTests
     {
         // Arrange
         var providerId = "TestProvider";
-        var options = new ImmutableGlobalOptions { ProviderId = providerId };
+        var options = new TrackOptionsSnapshot { ProviderId = providerId };
         var expectedProvider = Mock.Of<ISourceProvider>();
         var serviceProviderMock = new Mock<IServiceProvider>();
         var httpContextMock = new Mock<HttpContext>();
@@ -72,7 +72,7 @@ public class DefaultProviderResolverTests
     {
         // Arrange
         var providerId = "TestProvider";
-        var options = new ImmutableGlobalOptions { ProviderId = providerId };
+        var options = new TrackOptionsSnapshot { ProviderId = providerId };
         var serviceProviderMock = new Mock<IServiceProvider>();
         var httpContextMock = new Mock<HttpContext>();
         var expectedException = new InvalidOperationException("Service not found");
@@ -98,7 +98,7 @@ public class DefaultProviderResolverTests
     {
         // Arrange
         var expectedProvider = Mock.Of<ISourceProvider>();
-        var options = new ImmutableGlobalOptions { SourceProvider = expectedProvider };
+        var options = new TrackOptionsSnapshot { SourceProvider = expectedProvider };
         var httpContextMock = new Mock<HttpContext>();
 
         // Act
@@ -114,7 +114,7 @@ public class DefaultProviderResolverTests
     {
         // Arrange
         var expectedProvider = Mock.Of<ISourceProvider>();
-        var options = new ImmutableGlobalOptions
+        var options = new TrackOptionsSnapshot
         {
             SourceProviderFactory = ctx => expectedProvider
         };
@@ -132,7 +132,7 @@ public class DefaultProviderResolverTests
     public void ResolveProvider_ShouldResolveFirstRegisteredProvider_WhenNoOtherOptionsAreSpecified()
     {
         // Arrange
-        var options = new ImmutableGlobalOptions();
+        var options = new TrackOptionsSnapshot();
         var expectedProvider = Mock.Of<ISourceProvider>();
         var secondProvider = Mock.Of<ISourceProvider>();
         var serviceProviderMock = new Mock<IServiceProvider>();
@@ -202,7 +202,7 @@ public class DefaultProviderResolverTests
         var directProvider = Mock.Of<ISourceProvider>();
         var factoryProvider = Mock.Of<ISourceProvider>();
 
-        var options = new ImmutableGlobalOptions
+        var options = new TrackOptionsSnapshot
         {
             ProviderId = providerId,
             SourceProvider = directProvider,
@@ -236,7 +236,7 @@ public class DefaultProviderResolverTests
         var expectedProvider = Mock.Of<ISourceProvider>();
         var factoryProvider = Mock.Of<ISourceProvider>();
 
-        var options = new ImmutableGlobalOptions
+        var options = new TrackOptionsSnapshot
         {
             SourceProvider = expectedProvider,
             SourceProviderFactory = (ctx) => factoryProvider

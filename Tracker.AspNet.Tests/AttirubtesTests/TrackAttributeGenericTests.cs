@@ -29,7 +29,7 @@ public class TrackAttributeGenericTests
     private readonly Mock<ILogger<TrackAttribute<TestDbContext>>> _loggerMock;
 
     private readonly Mock<TestDbContext> _dbContextMock;
-    private readonly ImmutableGlobalOptions _defaultOptions;
+    private readonly TrackOptionsSnapshot _defaultOptions;
     private readonly ActionExecutingContext _actionExecutingContext;
     private readonly HttpContext _httpContext;
 
@@ -49,7 +49,7 @@ public class TrackAttributeGenericTests
 
         _dbContextMock = new Mock<TestDbContext>();
 
-        _defaultOptions = new ImmutableGlobalOptions
+        _defaultOptions = new TrackOptionsSnapshot
         {
             CacheControl = "max-age=3600",
             Tables = []
@@ -91,7 +91,7 @@ public class TrackAttributeGenericTests
             .Returns("custom-source");
 
         bool expectedShouldDispose = false;
-        _providerResolverMock.Setup(x => x.ResolveProvider(_httpContext, It.IsAny<ImmutableGlobalOptions>(), out expectedShouldDispose))
+        _providerResolverMock.Setup(x => x.ResolveProvider(_httpContext, It.IsAny<TrackOptionsSnapshot>(), out expectedShouldDispose))
             .Returns(_sourceProvider.Object);
 
         _tableNameResolver
@@ -234,7 +234,7 @@ public class TrackAttributeGenericTests
         });
 
         SetupServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<ImmutableGlobalOptions>()))
+        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
             .Returns(false);
 
         // Act
@@ -242,7 +242,7 @@ public class TrackAttributeGenericTests
 
         // Assert
         Assert.True(nextCalled);
-        _requestHandlerMock.Verify(x => x.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), default),
+        _requestHandlerMock.Verify(x => x.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), default),
             Times.Never);
     }
 
@@ -259,9 +259,9 @@ public class TrackAttributeGenericTests
         });
 
         SetupServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<ImmutableGlobalOptions>()))
+        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
             .Returns(true);
-        _requestHandlerMock.Setup(x => x.HandleRequest(_httpContext, It.IsAny<ImmutableGlobalOptions>(), default))
+        _requestHandlerMock.Setup(x => x.HandleRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>(), default))
             .ReturnsAsync(false);
 
         // Act
@@ -269,7 +269,7 @@ public class TrackAttributeGenericTests
 
         // Assert
         Assert.True(nextCalled);
-        _requestHandlerMock.Verify(x => x.HandleRequest(_httpContext, It.IsAny<ImmutableGlobalOptions>(), default), Times.Once);
+        _requestHandlerMock.Verify(x => x.HandleRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>(), default), Times.Once);
     }
 
 
@@ -307,7 +307,7 @@ public class TrackAttributeGenericTests
         _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(_requestHandlerMock.Object);
 
-        _serviceProviderMock.Setup(x => x.GetService(typeof(ImmutableGlobalOptions)))
+        _serviceProviderMock.Setup(x => x.GetService(typeof(TrackOptionsSnapshot)))
             .Returns(_defaultOptions);
 
         _serviceProviderMock.Setup(x => x.GetService(typeof(ITableNameResolver)))

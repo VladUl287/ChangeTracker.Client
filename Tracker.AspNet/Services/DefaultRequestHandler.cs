@@ -10,7 +10,7 @@ namespace Tracker.AspNet.Services;
 public sealed class DefaultRequestHandler(
     IETagProvider etagProvider, IProviderResolver providerResolver, ILogger<DefaultRequestHandler> logger) : IRequestHandler
 {
-    public async ValueTask<bool> HandleRequest(HttpContext ctx, ImmutableGlobalOptions options, CancellationToken token = default)
+    public async ValueTask<bool> HandleRequest(HttpContext ctx, TrackOptionsSnapshot options, CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(ctx, nameof(ctx));
         ArgumentNullException.ThrowIfNull(options, nameof(options));
@@ -47,7 +47,7 @@ public sealed class DefaultRequestHandler(
         }
     }
 
-    private bool NotModified(HttpContext ctx, ImmutableGlobalOptions options, RequestId reqId, ulong lastTimestamp, out string suffix)
+    private bool NotModified(HttpContext ctx, TrackOptionsSnapshot options, RequestId reqId, ulong lastTimestamp, out string suffix)
     {
         suffix = string.Empty;
 
@@ -68,7 +68,7 @@ public sealed class DefaultRequestHandler(
     }
 
     private static async ValueTask<ulong> GetLastVersionAsync(
-        ImmutableGlobalOptions options, ISourceProvider sourceOperations, CancellationToken token)
+        TrackOptionsSnapshot options, ISourceProvider sourceOperations, CancellationToken token)
     {
         return options.Tables.Length switch
         {

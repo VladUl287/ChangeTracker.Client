@@ -10,9 +10,6 @@ using Tracker.Benchmarks;
 //BenchmarkRunner.Run<NpgsqlOperationBenchmark>();
 //return;
 
-BenchmarkRunner.Run<TrackerMiddlewareBenchmark>();
-return;
-
 //BenchmarkRunner.Run<HashersBenchamrk>();
 //return;
 

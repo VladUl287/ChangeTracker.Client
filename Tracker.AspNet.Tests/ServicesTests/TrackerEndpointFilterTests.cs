@@ -12,7 +12,7 @@ public class TrackerEndpointFilterTests
 {
     private readonly Mock<IRequestHandler> _mockService;
     private readonly Mock<IRequestFilter> _mockFilter;
-    private readonly ImmutableGlobalOptions _mockOptions;
+    private readonly TrackOptionsSnapshot _mockOptions;
     private readonly TrackerEndpointFilter _filter;
     private readonly Mock<HttpContext> _mockHttpContext;
     private readonly EndpointFilterInvocationContext _filterContext;
@@ -22,7 +22,7 @@ public class TrackerEndpointFilterTests
     {
         _mockService = new Mock<IRequestHandler>();
         _mockFilter = new Mock<IRequestFilter>();
-        _mockOptions = new ImmutableGlobalOptions();
+        _mockOptions = new TrackOptionsSnapshot();
         _filter = new TrackerEndpointFilter(_mockService.Object, _mockFilter.Object, _mockOptions);
 
         _mockHttpContext = new Mock<HttpContext>();
@@ -62,7 +62,7 @@ public class TrackerEndpointFilterTests
         // Assert
         Assert.Equal(expectedResult, result);
         _mockFilter.Verify(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions), Times.Once);
-        _mockService.Verify(x => x.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<ImmutableGlobalOptions>(), default), Times.Never);
+        _mockService.Verify(x => x.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), default), Times.Never);
         _mockNext.Verify(x => x(_filterContext), Times.Once);
     }
 

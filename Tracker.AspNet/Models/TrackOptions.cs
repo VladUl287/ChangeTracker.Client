@@ -5,7 +5,7 @@ using Tracker.Core.Services.Contracts;
 
 namespace Tracker.AspNet.Models;
 
-public sealed class GlobalOptions
+public sealed class TrackOptions
 {
     public string? ProviderId { get; set; }
     public ISourceProvider? SourceProvider { get; set; }
@@ -24,7 +24,7 @@ public sealed class GlobalOptions
     public Func<HttpContext, string> Suffix { get; set; } = (_) => string.Empty;
 }
 
-public sealed record ImmutableGlobalOptions
+public sealed record TrackOptionsSnapshot
 {
     public string? ProviderId { get; init; }
     public ISourceProvider? SourceProvider { get; init; }
@@ -33,7 +33,6 @@ public sealed record ImmutableGlobalOptions
     public Func<HttpContext, bool> Filter { get; init; } = (_) => true;
     public ImmutableArray<string> InvalidResponseDirectives { get; init; } = [];
     public ImmutableArray<string> InvalidRequestDirectives { get; init; } = [];
-
     public ImmutableArray<string> Tables { get; init; } = [];
 
     public string CacheControl { get; init; } = string.Empty;
