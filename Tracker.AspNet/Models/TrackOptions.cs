@@ -12,8 +12,6 @@ public sealed class TrackOptions
     public Func<HttpContext, ISourceProvider>? SourceProviderFactory { get; set; }
 
     public Func<HttpContext, bool> Filter { get; set; } = (_) => true;
-    public HashSet<string> InvalidResponseDirectives { get; init; } = ["no-store", "immutable"];
-    public HashSet<string> InvalidRequestDirectives { get; init; } = ["no-store"];
 
     public string[] Tables { get; set; } = [];
     public Type[] Entities { get; set; } = [];
@@ -31,8 +29,7 @@ public sealed record TrackOptionsSnapshot
     public Func<HttpContext, ISourceProvider>? SourceProviderFactory { get; init; }
 
     public Func<HttpContext, bool> Filter { get; init; } = (_) => true;
-    public ImmutableArray<string> InvalidResponseDirectives { get; init; } = [];
-    public ImmutableArray<string> InvalidRequestDirectives { get; init; } = [];
+
     public ImmutableArray<string> Tables { get; init; } = [];
 
     public string CacheControl { get; init; } = string.Empty;

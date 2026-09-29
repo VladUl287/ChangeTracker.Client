@@ -23,9 +23,7 @@ public sealed class DefaultOptionsBuilder(IServiceScopeFactory scopeFactory, ITa
             SourceProvider = options.SourceProvider,
             CacheControl = ResolveCacheControl(options),
             SourceProviderFactory = options.SourceProviderFactory,
-            Tables = options.Tables is not null ? [.. options.Tables] : [],
-            InvalidRequestDirectives = options.InvalidRequestDirectives is not null ? [.. options.InvalidRequestDirectives] : [],
-            InvalidResponseDirectives = options.InvalidResponseDirectives is not null ? [.. options.InvalidResponseDirectives] : [],
+            Tables = options.Tables is not null ? [.. options.Tables] : []
         };
     }
 
@@ -47,9 +45,7 @@ public sealed class DefaultOptionsBuilder(IServiceScopeFactory scopeFactory, ITa
             ProviderId = options.ProviderId,
             SourceProvider = options.SourceProvider,
             CacheControl = ResolveCacheControl(options),
-            SourceProviderFactory = options.SourceProviderFactory,
-            InvalidRequestDirectives = options.InvalidRequestDirectives is not null ? [.. options.InvalidRequestDirectives] : [],
-            InvalidResponseDirectives = options.InvalidResponseDirectives is not null ? [.. options.InvalidResponseDirectives] : [],
+            SourceProviderFactory = options.SourceProviderFactory
         };
     }
 

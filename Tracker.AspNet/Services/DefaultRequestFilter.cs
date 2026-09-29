@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using Tracker.AspNet.Logging;
 using Tracker.AspNet.Models;
 using Tracker.AspNet.Services.Contracts;
@@ -29,18 +26,6 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
             return false;
         }
 
-        if (AnyInvalidDirective(ctx.Request.Headers.CacheControl, opts.InvalidRequestDirectives, out var reqDirective))
-        {
-            logger.LogRequestNotValidCacheControlDirective(reqDirective, traceId);
-            return false;
-        }
-
-        if (AnyInvalidDirective(ctx.Response.Headers.CacheControl, opts.InvalidResponseDirectives, out var resDirective))
-        {
-            logger.LogResponseNotValidCacheControlDirective(resDirective, traceId);
-            return false;
-        }
-
         if (!opts.Filter(ctx))
         {
             logger.LogFilterRejected(traceId);
@@ -49,30 +34,5 @@ public sealed class DefaultRequestFilter(ILogger<DefaultRequestFilter> logger) :
 
         logger.LogContextFilterFinished(traceId);
         return true;
-    }
-
-    internal static bool AnyInvalidDirective(StringValues headers, ImmutableArray<string> invalidDirectives, [NotNullWhen(true)] out string? directive)
-    {
-        directive = null;
-
-        if (headers.Count == 0)
-            return false;
-
-        foreach (var header in headers)
-        {
-            if (header is null)
-                continue;
-
-            foreach (var invalidDirective in invalidDirectives)
-            {
-                if (header.Contains(invalidDirective, StringComparison.OrdinalIgnoreCase))
-                {
-                    directive = invalidDirective;
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }

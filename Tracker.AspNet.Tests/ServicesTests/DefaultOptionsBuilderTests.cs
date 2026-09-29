@@ -52,8 +52,6 @@ public class DefaultOptionsBuilderTests
             Filter = _ => true,
             Tables = ["Table1", "Table2"],
             CacheControl = "max-age=3600",
-            InvalidRequestDirectives = ["no-cache"],
-            InvalidResponseDirectives = ["no-store"]
         };
 
         var sourceProviderMock = new Mock<ISourceProvider>();
@@ -71,8 +69,6 @@ public class DefaultOptionsBuilderTests
         Assert.Equal("/suffix", result.Suffix(new DefaultHttpContext()));
         Assert.True(result.Filter(new DefaultHttpContext()));
         Assert.Equal(new[] { "Table1", "Table2" }, result.Tables);
-        Assert.Equal(new[] { "no-cache" }, result.InvalidRequestDirectives);
-        Assert.Equal(new[] { "no-store" }, result.InvalidResponseDirectives);
     }
 
     [Fact]
@@ -91,8 +87,6 @@ public class DefaultOptionsBuilderTests
             SourceProvider = mockSourceProvider,
             SourceProviderFactory = sourceProviderFactory,
             Filter = filter,
-            InvalidRequestDirectives = ["directive1", "directive2"],
-            InvalidResponseDirectives = ["response1", "response2"],
             Tables = ["Table1", "Table2"],
             CacheControl = "public, max-age=3600",
             Suffix = suffix
@@ -112,14 +106,6 @@ public class DefaultOptionsBuilderTests
         Assert.Equal(2, result.Tables.Length);
         Assert.Contains("Table1", result.Tables);
         Assert.Contains("Table2", result.Tables);
-
-        Assert.Equal(2, result.InvalidRequestDirectives.Length);
-        Assert.Contains("directive1", result.InvalidRequestDirectives);
-        Assert.Contains("directive2", result.InvalidRequestDirectives);
-
-        Assert.Equal(2, result.InvalidResponseDirectives.Length);
-        Assert.Contains("response1", result.InvalidResponseDirectives);
-        Assert.Contains("response2", result.InvalidResponseDirectives);
     }
 
     [Fact]
@@ -128,9 +114,7 @@ public class DefaultOptionsBuilderTests
         // Arrange
         var options = new TrackOptions
         {
-            Tables = null!,
-            InvalidRequestDirectives = null!,
-            InvalidResponseDirectives = null!
+            Tables = null!
         };
 
         // Act
@@ -138,8 +122,6 @@ public class DefaultOptionsBuilderTests
 
         // Assert
         Assert.Empty(result.Tables);
-        Assert.Empty(result.InvalidRequestDirectives);
-        Assert.Empty(result.InvalidResponseDirectives);
     }
 
     [Theory]

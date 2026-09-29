@@ -121,8 +121,6 @@ public class TrackAttributeTests
         Assert.Equal(_defaultOptions.Filter, result.Filter);
         Assert.Equal(_defaultOptions.Suffix, result.Suffix);
         Assert.Equal(_defaultOptions.SourceProviderFactory, result.SourceProviderFactory);
-        Assert.Equal(_defaultOptions.InvalidRequestDirectives, result.InvalidRequestDirectives);
-        Assert.Equal(_defaultOptions.InvalidResponseDirectives, result.InvalidResponseDirectives);
     }
 
     [Fact]

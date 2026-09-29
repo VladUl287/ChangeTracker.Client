@@ -84,7 +84,6 @@ public class DefaultRequestFilterTests
         _httpContext.Request.Headers.CacheControl = cacheControl;
         var options = new TrackOptionsSnapshot()
         {
-            InvalidRequestDirectives = ["no-store"]
         };
 
         // Act
@@ -108,7 +107,6 @@ public class DefaultRequestFilterTests
         _httpContext.Response.Headers.CacheControl = cacheControl;
         var options = new TrackOptionsSnapshot()
         {
-            InvalidResponseDirectives = ["no-store", "immutable"]
         };
 
         // Act
@@ -137,8 +135,6 @@ public class DefaultRequestFilterTests
         }
         var options = new TrackOptionsSnapshot()
         {
-            InvalidRequestDirectives = ["no-store"],
-            InvalidResponseDirectives = ["no-store", "immutable"]
         };
 
         // Act
@@ -157,7 +153,6 @@ public class DefaultRequestFilterTests
         _httpContext.Response.Headers.Append("Cache-Control", "immutable");
         var options = new TrackOptionsSnapshot()
         {
-            InvalidResponseDirectives = ["no-store", "immutable"]
         };
 
         // Act
@@ -192,7 +187,6 @@ public class DefaultRequestFilterTests
         _httpContext.Response.Headers.CacheControl = "";
         var options = new TrackOptionsSnapshot()
         {
-            InvalidResponseDirectives = ["no-store", "immutable"]
         };
 
         // Act
@@ -201,68 +195,6 @@ public class DefaultRequestFilterTests
         // Assert
         Assert.True(result);
     }
-
-    [Theory]
-    [InlineData("immutable", "immutable")]
-    [InlineData("no-store", "no-store")]
-    [InlineData("IMMUTABLE", "immutable")]
-    [InlineData("NO-STORE", "no-store")]
-    [InlineData("max-age=3600, immutable", "immutable")]
-    [InlineData("no-store, max-age=0", "no-store")]
-    public void AnyInvalidCacheControl_InvalidDirective_ReturnsTrueWithCorrectDirective(string cacheControl, string expectedDirective)
-    {
-        // Act
-        var result = DefaultRequestFilter.AnyInvalidDirective(cacheControl, ["no-store", "immutable"], out var directive);
-
-        // Assert
-        Assert.True(result);
-        Assert.Equal(expectedDirective, directive);
-    }
-
-    [Theory]
-    [InlineData("max-age=3600")]
-    [InlineData("public, max-age=31536000")]
-    [InlineData("no-cache")]
-    [InlineData("")]
-    [InlineData(null)]
-    public void AnyInvalidCacheControl_ValidDirective_ReturnsFalse(string cacheControl)
-    {
-        // Act
-        var result = DefaultRequestFilter.AnyInvalidDirective(cacheControl, ["no-store", "immutable"], out var directive);
-
-        // Assert
-        Assert.False(result);
-        Assert.Null(directive);
-    }
-
-    [Fact]
-    public void AnyInvalidCacheControl_MultipleHeaders_InvalidDirective_ReturnsTrue()
-    {
-        // Arrange
-        var headers = new StringValues(["max-age=3600", "immutable"]);
-
-        // Act
-        var result = DefaultRequestFilter.AnyInvalidDirective(headers, ["no-store", "immutable"], out var directive);
-
-        // Assert
-        Assert.True(result);
-        Assert.Equal("immutable", directive);
-    }
-
-    [Fact]
-    public void AnyInvalidCacheControl_NullHeaderValue_Skipped()
-    {
-        // Arrange
-        var headers = new StringValues(["max-age=3600", null, "no-cache"]);
-
-        // Act
-        var result = DefaultRequestFilter.AnyInvalidDirective(headers, ["no-store", "immutable"], out var directive);
-
-        // Assert
-        Assert.False(result);
-        Assert.Null(directive);
-    }
-
 
     [Fact]
     public void RequestValid_OptionsFilterReturnsFalse_ReturnsFalse()
