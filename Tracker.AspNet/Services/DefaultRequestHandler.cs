@@ -9,7 +9,7 @@ using Tracker.Core.Services.Contracts;
 namespace Tracker.AspNet.Services;
 
 public sealed class DefaultRequestHandler(
-    IETagProvider etagProvider, IProviderResolver providerResolver, ITrackerHasher hasher, ILogger<DefaultRequestHandler> logger) : IRequestHandler
+    IETagProvider etagProvider, IProviderResolver providerResolver, ILogger<DefaultRequestHandler> logger) : IRequestHandler
 {
     public async ValueTask<bool> HandleRequest(HttpContext ctx, ImmutableGlobalOptions options, CancellationToken token = default)
     {
