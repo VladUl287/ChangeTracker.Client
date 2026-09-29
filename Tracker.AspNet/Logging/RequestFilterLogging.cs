@@ -4,8 +4,8 @@ namespace Tracker.AspNet.Logging;
 
 public static partial class RequestFilterLogging
 {
-    [LoggerMessage(Level = LogLevel.Debug, Message = "Context filter started. TraceId - '{TraceId}'. Path - '{Path}'")]
-    public static partial void LogFilterStarted(this ILogger logger, RequestId TraceId, string Path);
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Context filter started. TraceId - {TraceId}")]
+    public static partial void LogFilterStarted(this ILogger logger, RequestId TraceId);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Context filter not passed: Method '{Method}' must be GET. TraceId - '{TraceId}'")]
     public static partial void LogNotGetRequest(this ILogger logger, string Method, RequestId TraceId);
