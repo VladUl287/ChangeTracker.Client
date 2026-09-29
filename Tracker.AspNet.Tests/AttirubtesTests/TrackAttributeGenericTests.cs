@@ -24,7 +24,6 @@ public class TrackAttributeGenericTests
     private readonly Mock<ITableNameResolver> _tableNameResolver;
     private readonly Mock<ISourceProvider> _sourceProvider;
 
-    private readonly Mock<IRequestFilter> _requestFilterMock;
     private readonly Mock<IRequestHandler> _requestHandlerMock;
     private readonly Mock<ILogger<TrackAttribute<TestDbContext>>> _loggerMock;
 
@@ -43,7 +42,6 @@ public class TrackAttributeGenericTests
         _sourceProvider = new Mock<ISourceProvider>();
         _tableNameResolver = new Mock<ITableNameResolver>();
 
-        _requestFilterMock = new Mock<IRequestFilter>();
         _requestHandlerMock = new Mock<IRequestHandler>();
         _loggerMock = new Mock<ILogger<TrackAttribute<TestDbContext>>>();
 
@@ -234,8 +232,6 @@ public class TrackAttributeGenericTests
         });
 
         SetupServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
-            .Returns(false);
 
         // Act
         await attribute.OnActionExecutionAsync(_actionExecutingContext, nextDelegate);
@@ -259,8 +255,7 @@ public class TrackAttributeGenericTests
         });
 
         SetupServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
-            .Returns(true);
+
         _requestHandlerMock.Setup(x => x.HandleRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>(), default))
             .ReturnsAsync(false);
 
@@ -297,12 +292,6 @@ public class TrackAttributeGenericTests
 
         _serviceProviderMock.Setup(x => x.GetService(typeof(IProviderResolver)))
             .Returns(_providerResolverMock.Object);
-
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(_requestFilterMock.Object);
-
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(_requestFilterMock.Object);
 
         _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(_requestHandlerMock.Object);

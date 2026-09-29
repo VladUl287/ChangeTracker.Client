@@ -11,7 +11,6 @@ namespace Tracker.AspNet.Tests.ServicesTests;
 public class TrackerEndpointFilterTests
 {
     private readonly Mock<IRequestHandler> _mockService;
-    private readonly Mock<IRequestFilter> _mockFilter;
     private readonly TrackOptionsSnapshot _mockOptions;
     private readonly TrackerEndpointFilter _filter;
     private readonly Mock<HttpContext> _mockHttpContext;
@@ -21,9 +20,8 @@ public class TrackerEndpointFilterTests
     public TrackerEndpointFilterTests()
     {
         _mockService = new Mock<IRequestHandler>();
-        _mockFilter = new Mock<IRequestFilter>();
         _mockOptions = new TrackOptionsSnapshot();
-        _filter = new TrackerEndpointFilter(_mockService.Object, _mockFilter.Object, _mockOptions);
+        _filter = new TrackerEndpointFilter(_mockService.Object, _mockOptions);
 
         _mockHttpContext = new Mock<HttpContext>();
         var mockRequest = new Mock<HttpRequest>();
@@ -51,8 +49,6 @@ public class TrackerEndpointFilterTests
     {
         // Arrange
         var expectedResult = Results.Ok("success");
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Returns(false);
         _mockNext.Setup(x => x(It.IsAny<EndpointFilterInvocationContext>()))
             .ReturnsAsync(expectedResult);
 
@@ -61,7 +57,6 @@ public class TrackerEndpointFilterTests
 
         // Assert
         Assert.Equal(expectedResult, result);
-        _mockFilter.Verify(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions), Times.Once);
         _mockService.Verify(x => x.HandleRequest(It.IsAny<HttpContext>(), It.IsAny<TrackOptionsSnapshot>(), default), Times.Never);
         _mockNext.Verify(x => x(_filterContext), Times.Once);
     }
@@ -71,8 +66,6 @@ public class TrackerEndpointFilterTests
     {
         // Arrange
         var expectedResult = Results.Ok("success");
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Returns(true);
         _mockService.Setup(x => x.HandleRequest(_mockHttpContext.Object, _mockOptions, default))
             .ReturnsAsync(false);
         _mockNext.Setup(x => x(It.IsAny<EndpointFilterInvocationContext>()))
@@ -83,7 +76,6 @@ public class TrackerEndpointFilterTests
 
         // Assert
         Assert.Equal(expectedResult, result);
-        _mockFilter.Verify(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions), Times.Once);
         _mockService.Verify(x => x.HandleRequest(_mockHttpContext.Object, _mockOptions, default), Times.Once);
         _mockNext.Verify(x => x(_filterContext), Times.Once);
     }
@@ -92,8 +84,6 @@ public class TrackerEndpointFilterTests
     public async Task InvokeAsync_RequestValid_IsNotModifiedTrue_Returns304StatusCode()
     {
         // Arrange
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Returns(true);
         _mockService.Setup(x => x.HandleRequest(_mockHttpContext.Object, _mockOptions, default))
             .ReturnsAsync(true);
         _mockNext.Setup(x => x(It.IsAny<EndpointFilterInvocationContext>()))
@@ -106,7 +96,6 @@ public class TrackerEndpointFilterTests
         // Assert
         Assert.NotNull(typedResult);
         Assert.Equal(StatusCodes.Status304NotModified, typedResult.StatusCode);
-        _mockFilter.Verify(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions), Times.Once);
         _mockService.Verify(x => x.HandleRequest(_mockHttpContext.Object, _mockOptions, default), Times.Once);
         _mockNext.Verify(x => x(It.IsAny<EndpointFilterInvocationContext>()), Times.Never);
     }
@@ -116,8 +105,6 @@ public class TrackerEndpointFilterTests
     {
         // Arrange
         var expectedException = new InvalidOperationException("Service error");
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Returns(true);
         _mockService.Setup(x => x.HandleRequest(_mockHttpContext.Object, _mockOptions, default))
             .ThrowsAsync(expectedException);
 
@@ -133,8 +120,6 @@ public class TrackerEndpointFilterTests
     {
         // Arrange
         var expectedException = new InvalidOperationException("Filter error");
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Throws(expectedException);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -163,8 +148,6 @@ public class TrackerEndpointFilterTests
     public async Task InvokeAsync_NextReturnsNull_ReturnsNull()
     {
         // Arrange
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Returns(false);
         _mockNext.Setup(x => x(It.IsAny<EndpointFilterInvocationContext>()))
             .ReturnsAsync((object?)null);
 
@@ -179,8 +162,6 @@ public class TrackerEndpointFilterTests
     public async Task InvokeAsync_StatusCodeResult_VerifiesStatusCode()
     {
         // Arrange
-        _mockFilter.Setup(x => x.ValidRequest(_mockHttpContext.Object, _mockOptions))
-            .Returns(true);
         _mockService.Setup(x => x.HandleRequest(_mockHttpContext.Object, _mockOptions, default))
             .ReturnsAsync(true);
 

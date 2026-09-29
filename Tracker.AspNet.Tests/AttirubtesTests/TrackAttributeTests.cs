@@ -22,7 +22,6 @@ public class TrackAttributeTests
     private readonly Mock<IProviderResolver> _providerResolverMock;
     private readonly Mock<ISourceProvider> _sourceProvider;
 
-    private readonly Mock<IRequestFilter> _requestFilterMock;
     private readonly Mock<IRequestHandler> _requestHandlerMock;
     private readonly Mock<ILogger<TrackAttribute>> _loggerMock;
 
@@ -39,7 +38,6 @@ public class TrackAttributeTests
         _providerResolverMock = new Mock<IProviderResolver>();
         _sourceProvider = new Mock<ISourceProvider>();
 
-        _requestFilterMock = new Mock<IRequestFilter>();
         _requestHandlerMock = new Mock<IRequestHandler>();
         _loggerMock = new Mock<ILogger<TrackAttribute>>();
 
@@ -240,8 +238,6 @@ public class TrackAttributeTests
         });
 
         SetupScopeServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
-            .Returns(false);
 
         // Act
         await attribute.OnActionExecutionAsync(_actionExecutingContext, nextDelegate);
@@ -265,8 +261,7 @@ public class TrackAttributeTests
         });
 
         SetupScopeServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
-            .Returns(true);
+
         _requestHandlerMock.Setup(x => x.HandleRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>(), default))
             .ReturnsAsync(false);
 
@@ -291,8 +286,7 @@ public class TrackAttributeTests
         });
 
         SetupScopeServiceProvider();
-        _requestFilterMock.Setup(x => x.ValidRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>()))
-            .Returns(true);
+
         _requestHandlerMock.Setup(x => x.HandleRequest(_httpContext, It.IsAny<TrackOptionsSnapshot>(), default))
             .ReturnsAsync(true);
 
@@ -311,9 +305,6 @@ public class TrackAttributeTests
         var attribute = new TrackAttribute();
         var nextDelegate = new ActionExecutionDelegate(() =>
             Task.FromResult<ActionExecutedContext>(null!));
-
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(null); // Simulate missing service
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -341,12 +332,6 @@ public class TrackAttributeTests
     {
         _serviceProviderMock.Setup(x => x.GetService(typeof(IProviderResolver)))
             .Returns(_providerResolverMock.Object);
-
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(_requestFilterMock.Object);
-
-        _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(_requestFilterMock.Object);
 
         _serviceProviderMock.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(_requestHandlerMock.Object);

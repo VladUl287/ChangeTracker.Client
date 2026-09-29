@@ -11,19 +11,15 @@ public abstract class TrackAttributeBase : Attribute, IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext execCtx, ActionExecutionDelegate next)
     {
-        var options = GetOptions(execCtx.HttpContext);
+        var ctx = execCtx.HttpContext;
 
-        if (RequestValid(execCtx.HttpContext, options) && await NotModified(execCtx.HttpContext, options))
+        var options = GetOptions(ctx);
+
+        if (options.Filter(ctx) && await NotModified(ctx, options))
             return;
 
         await next();
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool RequestValid(HttpContext httpCtx, TrackOptionsSnapshot options) =>
-        httpCtx.RequestServices
-            .GetRequiredService<IRequestFilter>()
-            .ValidRequest(httpCtx, options);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ValueTask<bool> NotModified(HttpContext httpCtx, TrackOptionsSnapshot options) =>

@@ -4,13 +4,11 @@ using Tracker.AspNet.Services.Contracts;
 
 namespace Tracker.AspNet.Middlewares;
 
-public sealed class TrackerMiddleware(
-    RequestDelegate next, IRequestFilter filter, IRequestHandler service,
-    TrackOptionsSnapshot opts)
+public sealed class TrackerMiddleware(RequestDelegate next, IRequestHandler service, TrackOptionsSnapshot opts)
 {
     public async Task InvokeAsync(HttpContext ctx)
     {
-        if (filter.ValidRequest(ctx, opts) && await service.HandleRequest(ctx, opts))
+        if (opts.Filter(ctx) && await service.HandleRequest(ctx, opts))
             return;
 
         await next(ctx);

@@ -20,14 +20,11 @@ public class EndpointBuilderExtensionsTests
         var mockServiceProvider = new Mock<IServiceProvider>();
         var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var mockEtagService = new Mock<IRequestHandler>();
-        var mockRequestFilter = new Mock<IRequestFilter>();
 
         mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(mockEtagService.Object);
-        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(mockRequestFilter.Object);
 
         var immutableOptions = new TrackOptionsSnapshot();
         mockOptionsBuilder.Setup(x => x.Build<DbContext>(options))
@@ -55,7 +52,6 @@ public class EndpointBuilderExtensionsTests
         Assert.NotEmpty(endpointBuilder.Object.FilterFactories);
         mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)), Times.Once);
         mockServiceProvider.Verify(x => x.GetService(typeof(IRequestHandler)), Times.Once);
-        mockServiceProvider.Verify(x => x.GetService(typeof(IRequestFilter)), Times.Once);
         mockOptionsBuilder.Verify(x => x.Build<DbContext>(options), Times.Once);
     }
 
@@ -102,14 +98,11 @@ public class EndpointBuilderExtensionsTests
         var mockServiceProvider = new Mock<IServiceProvider>();
         var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var mockEtagService = new Mock<IRequestHandler>();
-        var mockRequestFilter = new Mock<IRequestFilter>();
 
         mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(mockEtagService.Object);
-        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(mockRequestFilter.Object);
 
         var immutableOptions = new TrackOptionsSnapshot();
         mockOptionsBuilder.Setup(x => x.Build(options))
@@ -136,7 +129,6 @@ public class EndpointBuilderExtensionsTests
 
         mockServiceProvider.Verify(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)), Times.Once);
         mockServiceProvider.Verify(x => x.GetService(typeof(IRequestHandler)), Times.Once);
-        mockServiceProvider.Verify(x => x.GetService(typeof(IRequestFilter)), Times.Once);
         mockOptionsBuilder.Verify(x => x.Build(options), Times.Once);
     }
 
@@ -169,14 +161,11 @@ public class EndpointBuilderExtensionsTests
         var mockServiceProvider = new Mock<IServiceProvider>();
         var mockOptionsBuilder = new Mock<IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>>();
         var mockEtagService = new Mock<IRequestHandler>();
-        var mockRequestFilter = new Mock<IRequestFilter>();
 
         mockServiceProvider.Setup(x => x.GetService(typeof(IOptionsBuilder<TrackOptions, TrackOptionsSnapshot>)))
             .Returns(mockOptionsBuilder.Object);
         mockServiceProvider.Setup(x => x.GetService(typeof(IRequestHandler)))
             .Returns(mockEtagService.Object);
-        mockServiceProvider.Setup(x => x.GetService(typeof(IRequestFilter)))
-            .Returns(mockRequestFilter.Object);
 
         var immutableOptions = new TrackOptionsSnapshot();
         mockOptionsBuilder.Setup(x => x.Build<DbContext>(options))

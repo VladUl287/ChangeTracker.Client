@@ -23,9 +23,8 @@ public static class EndpointBuilderExtensions
             var immutableOptions = builder.Build<TContext>(options);
 
             var etagService = provider.ApplicationServices.GetRequiredService<IRequestHandler>();
-            var requestFilter = provider.ApplicationServices.GetRequiredService<IRequestFilter>();
 
-            var filter = new TrackerEndpointFilter(etagService, requestFilter, immutableOptions);
+            var filter = new TrackerEndpointFilter(etagService, immutableOptions);
             return (context) => filter.InvokeAsync(context, next);
         });
     }
@@ -56,9 +55,8 @@ public static class EndpointBuilderExtensions
             var immutableOptions = builder.Build(options);
 
             var etagService = provider.ApplicationServices.GetRequiredService<IRequestHandler>();
-            var requestFilter = provider.ApplicationServices.GetRequiredService<IRequestFilter>();
 
-            var filter = new TrackerEndpointFilter(etagService, requestFilter, immutableOptions);
+            var filter = new TrackerEndpointFilter(etagService, immutableOptions);
             return (context) => filter.InvokeAsync(context, next);
         });
     }

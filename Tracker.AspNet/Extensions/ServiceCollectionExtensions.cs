@@ -72,8 +72,6 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IRequestHandler, DefaultRequestHandler>();
 
-        services.AddSingleton<IRequestFilter, DefaultRequestFilter>();
-
         services.AddSingleton<IProviderResolver, DefaultProviderResolver>();
 
         services.AddSingleton<ITableNameResolver, DefaultTableNameResolver>();
