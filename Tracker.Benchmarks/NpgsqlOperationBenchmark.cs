@@ -12,6 +12,6 @@ public class NpgsqlOperationBenchmark
     [Benchmark]
     public ValueTask<long> GetRolesTimestamp()
     {
-        return _npgsqlOperations.GetLastVersion(_tableName, default);
+        return _npgsqlOperations.GetVersion(_tableName, default);
     }
 }

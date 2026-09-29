@@ -68,7 +68,7 @@ public class DefaultRequestHandlerTests
         };
 
         var mockSourceOperations = new Mock<ISourceProvider>();
-        mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
+        mockSourceOperations.Setup(x => x.GetVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
 
         var expectedShouldDispose = false;
@@ -104,7 +104,7 @@ public class DefaultRequestHandlerTests
         };
 
         var mockSourceOperations = new Mock<ISourceProvider>();
-        mockSourceOperations.Setup(x => x.GetLastVersion(It.IsAny<CancellationToken>()))
+        mockSourceOperations.Setup(x => x.GetVersion(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks);
 
         var expectedShouldDispose = false;

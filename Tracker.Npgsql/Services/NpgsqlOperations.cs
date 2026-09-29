@@ -62,7 +62,7 @@ public sealed class NpgsqlOperations : ISourceProvider
             await reader.GetFieldValueAsync<bool>(0, token);
     }
 
-    public async ValueTask<bool> IsTracking(string key, CancellationToken token = default)
+    public async ValueTask<bool> IsTrackingEnabled(string key, CancellationToken token = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
@@ -76,7 +76,7 @@ public sealed class NpgsqlOperations : ISourceProvider
             await reader.GetFieldValueAsync<bool>(0, token);
     }
 
-    public async ValueTask<long> GetLastVersion(string key, CancellationToken token = default)
+    public async ValueTask<long> GetVersion(string key, CancellationToken token = default)
     {
         const string GetTimestampQuery = "SELECT get_last_timestamp(@table_name);";
         using var command = _dataSource.CreateCommand(GetTimestampQuery);
@@ -111,7 +111,7 @@ public sealed class NpgsqlOperations : ISourceProvider
         throw new InvalidOperationException($"Not able to resolve timestamp for tables");
     }
 
-    public async ValueTask<long> GetLastVersion(CancellationToken token = default)
+    public async ValueTask<long> GetVersion(CancellationToken token = default)
     {
         const string GetTimestampQuery = "SELECT (pg_last_committed_xact()).timestamp;";
         using var command = _dataSource.CreateCommand(GetTimestampQuery);
@@ -123,7 +123,7 @@ public sealed class NpgsqlOperations : ISourceProvider
         throw new InvalidOperationException("Not able to resolve pg_last_committed_xact timestamp");
     }
 
-    public async ValueTask<bool> SetLastVersion(string key, long value, CancellationToken token = default)
+    public async ValueTask<bool> SetVersion(string key, long value, CancellationToken token = default)
     {
         const string SetTimestampQuery = $"SELECT set_last_timestamp(@table_name, @timestamp);";
         using var command = _dataSource.CreateCommand(SetTimestampQuery);

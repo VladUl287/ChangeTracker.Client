@@ -95,12 +95,12 @@ public class TrackerMiddlewareBenchmark
             throw new NotImplementedException();
         }
 
-        public ValueTask<long> GetLastVersion(string key, CancellationToken token = default)
+        public ValueTask<long> GetVersion(string key, CancellationToken token = default)
         {
             return new ValueTask<long>(638081280000000000);
         }
 
-        public ValueTask<long> GetLastVersion(CancellationToken token = default)
+        public ValueTask<long> GetVersion(CancellationToken token = default)
         {
             return new ValueTask<long>(638081280000000000);
         }
@@ -111,12 +111,12 @@ public class TrackerMiddlewareBenchmark
             return ValueTask.CompletedTask;
         }
 
-        public ValueTask<bool> IsTracking(string key, CancellationToken token = default)
+        public ValueTask<bool> IsTrackingEnabled(string key, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }
 
-        public ValueTask<bool> SetLastVersion(string key, long value, CancellationToken token = default)
+        public ValueTask<bool> SetVersion(string key, long value, CancellationToken token = default)
         {
             throw new NotImplementedException();
         }

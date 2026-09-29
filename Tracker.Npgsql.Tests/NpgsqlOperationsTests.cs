@@ -184,7 +184,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
     public async Task IsTracking_ValidTable_ReturnsBoolean()
     {
         // Act
-        var result = await _operations.IsTracking(_testTableName);
+        var result = await _operations.IsTrackingEnabled(_testTableName);
 
         // Assert
         Assert.IsType<bool>(result);
@@ -200,13 +200,13 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         await _operations.EnableTracking(_testTableName);
 
         // Act
-        var timestamp1 = await _operations.GetLastVersion(_testTableName);
+        var timestamp1 = await _operations.GetVersion(_testTableName);
         await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 12);
-        var timestamp2 = await _operations.GetLastVersion(_testTableName);
+        var timestamp2 = await _operations.GetVersion(_testTableName);
         await SqlHelpers.InsertToTestTable(_connectionString, _testTableName, 12);
-        var timestamp3 = await _operations.GetLastVersion(_testTableName);
+        var timestamp3 = await _operations.GetVersion(_testTableName);
         await Task.Delay(50);
-        var timestamp4 = await _operations.GetLastVersion(_testTableName);
+        var timestamp4 = await _operations.GetVersion(_testTableName);
 
         // Assert
         Assert.True(utcNow < timestamp1);
@@ -236,13 +236,13 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
             await SqlHelpers.InsertToTestTable(_connectionString, sourceTable, i);
 
         // Act
-        var destTimestamp1 = await _operations.GetLastVersion(_testTableName);
-        var sourceTableTimestamp1 = await _operations.GetLastVersion(sourceTable);
+        var destTimestamp1 = await _operations.GetVersion(_testTableName);
+        var sourceTableTimestamp1 = await _operations.GetVersion(sourceTable);
 
         await SqlHelpers.InsertToTestFromTestTable(_connectionString, sourceTable, _testTableName);
 
-        var destTimestamp2 = await _operations.GetLastVersion(_testTableName);
-        var sourceTableTimestamp2 = await _operations.GetLastVersion(sourceTable);
+        var destTimestamp2 = await _operations.GetVersion(_testTableName);
+        var sourceTableTimestamp2 = await _operations.GetVersion(sourceTable);
 
         await SqlHelpers.DropTable(_connectionString, sourceTable);
 
@@ -277,8 +277,8 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         await SqlHelpers.InsertToTestFromTestTable(_connectionString, sourceTable, _testTableName);
 
         // Act
-        var destTimestamp1 = await _operations.GetLastVersion(_testTableName);
-        var sourceTableTimestamp1 = await _operations.GetLastVersion(sourceTable);
+        var destTimestamp1 = await _operations.GetVersion(_testTableName);
+        var sourceTableTimestamp1 = await _operations.GetVersion(sourceTable);
 
         using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -292,8 +292,8 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
 
         await createTableCmd.ExecuteNonQueryAsync();
 
-        var destTimestamp2 = await _operations.GetLastVersion(_testTableName);
-        var sourceTableTimestamp2 = await _operations.GetLastVersion(sourceTable);
+        var destTimestamp2 = await _operations.GetVersion(_testTableName);
+        var sourceTableTimestamp2 = await _operations.GetVersion(sourceTable);
 
         await SqlHelpers.DropTable(_connectionString, sourceTable);
 
@@ -328,8 +328,8 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         await SqlHelpers.InsertToTestFromTestTable(_connectionString, sourceTable, _testTableName);
 
         // Act
-        var destTimestamp1 = await _operations.GetLastVersion(_testTableName);
-        var sourceTableTimestamp1 = await _operations.GetLastVersion(sourceTable);
+        var destTimestamp1 = await _operations.GetVersion(_testTableName);
+        var sourceTableTimestamp1 = await _operations.GetVersion(sourceTable);
 
         using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -344,8 +344,8 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
 
         await createTableCmd.ExecuteNonQueryAsync();
 
-        var destTimestamp2 = await _operations.GetLastVersion(_testTableName);
-        var sourceTableTimestamp2 = await _operations.GetLastVersion(sourceTable);
+        var destTimestamp2 = await _operations.GetVersion(_testTableName);
+        var sourceTableTimestamp2 = await _operations.GetVersion(sourceTable);
 
         await SqlHelpers.DropTable(_connectionString, sourceTable);
 
@@ -365,7 +365,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
     {
         // Act
         await _operations.DisableTracking(_testTableName);
-        Task timestamp() => _operations.GetLastVersion(_testTableName).AsTask();
+        Task timestamp() => _operations.GetVersion(_testTableName).AsTask();
 
         // Assert
         await Assert.ThrowsAsync<InvalidCastException>(timestamp);
@@ -376,7 +376,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
     {
         // Act
         await _operations.EnableTracking(_testTableName);
-        var timestamp = await _operations.GetLastVersion(_testTableName);
+        var timestamp = await _operations.GetVersion(_testTableName);
 
         // Assert
         Assert.True(timestamp > 0);
@@ -390,7 +390,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
 
         // Act & Assert
         await Assert.ThrowsAsync<PostgresException>(async () =>
-            await _operations.GetLastVersion(invalidTable));
+            await _operations.GetVersion(invalidTable));
     }
 
     [Fact]
@@ -435,7 +435,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
     public async Task GetLastVersion_NoParameters_ReturnsDatabaseTimestamp()
     {
         // Act
-        var timestamp = await _operations.GetLastVersion();
+        var timestamp = await _operations.GetVersion();
 
         // Assert
         Assert.True(timestamp > 0);
@@ -450,7 +450,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         var testTimestamp = DateTimeOffset.UtcNow.AddHours(-1).Ticks;
 
         // Act
-        var result = await _operations.SetLastVersion(_testTableName, testTimestamp);
+        var result = await _operations.SetVersion(_testTableName, testTimestamp);
 
         // Assert
         Assert.True(result);
@@ -465,7 +465,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
         var testTimestamp = DateTimeOffset.UtcNow.AddHours(-1).Ticks;
 
         // Act
-        var result = await _operations.SetLastVersion(_testTableName, testTimestamp);
+        var result = await _operations.SetVersion(_testTableName, testTimestamp);
 
         // Assert
         Assert.False(result);
@@ -480,7 +480,7 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
 
         // Act & Assert
         await Assert.ThrowsAsync<TaskCanceledException>(async () =>
-            await _operations.GetLastVersion(_testTableName, cts.Token));
+            await _operations.GetVersion(_testTableName, cts.Token));
     }
 
     [Fact]
@@ -506,6 +506,6 @@ public class NpgsqlOperationsIntegrationTests : IAsyncLifetime
 
         // Act & Assert
         await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
-            await ops.GetLastVersion("test"));
+            await ops.GetVersion("test"));
     }
 }
