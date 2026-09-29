@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Tracker.Api.Demo;
 using Tracker.Api.Demo.Database;
 using Tracker.AspNet.Extensions;
 using Tracker.Npgsql.Extensions;
@@ -12,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services
         .AddTracker()
         .AddNpgsqlProvider<DatabaseContext>();
+
+    builder.Services.AddHostedService<StartupService>();
 
     builder.Services.AddDbContext<DatabaseContext>(options =>
     {

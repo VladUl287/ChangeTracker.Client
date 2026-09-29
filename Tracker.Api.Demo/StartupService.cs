@@ -7,7 +7,9 @@ public class StartupService(IServiceScopeFactory scopeFactory) : BackgroundServi
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var scope = scopeFactory.CreateScope();
-        var sourceProvider = scope.ServiceProvider.GetRequiredService<ISourceProvider>();
-        await sourceProvider.EnableTracking("roles", stoppingToken);
+        var sourceProvider = scope.ServiceProvider.GetKeyedServices<ISourceProvider>(KeyedService.AnyKey);
+        await sourceProvider
+            .First()
+            .EnableTracking("roles", stoppingToken);
     }
 }
