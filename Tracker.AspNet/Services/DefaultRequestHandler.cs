@@ -19,7 +19,7 @@ public sealed class DefaultRequestHandler(
 
         logger.LogRequestHandleStarted(traceId, ctx.Request.Path);
 
-        var provider = providerResolver.ResolveProvider(ctx, options);
+        var provider = providerResolver.ResolveProvider(ctx, options, out var canDispose);
 
         try
         {
@@ -41,7 +41,7 @@ public sealed class DefaultRequestHandler(
         }
         finally
         {
-            if (provider is IDisposable d)
+            if (canDispose && provider is IDisposable d)
                 d.Dispose();
 
             logger.LogRequestHandleFinished(traceId);
